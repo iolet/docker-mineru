@@ -23,7 +23,7 @@ extractor2: Blueprint = Blueprint('extractor2', __name__)
 def create_task():
 
     try:
-        payload: dict = request.json()
+        payload: dict = request.json
     except BadRequest as e:
         return {
             'error': {
@@ -109,19 +109,19 @@ def create_task():
         }, 422
 
     file_id: Optional[str] = payload.get('file_id', None)
-    if not isinstance(file_id, str) or not file_id.isprintable():
+    if not isinstance(file_id, str) or file_id.isspace():
         return {
             'error': {
                 'code': 'EmptyOrMissingValue',
-                'message': 'empty or missing, please ensure file_id is present and not empty',
+                'message': 'file_id empty or missing, please ensure it present and not empty',
                 'target': 'file_id'
             }
         }, 422
-    elif not preg_replace(r'[a-zA-z0-9-]', '', file_id).isprintable():
+    elif preg_replace(r'[a-zA-z0-9-]', '', file_id).isspace():
         return {
             'error': {
                 'code': 'UnsupportedValue',
-                'message': 'field value should be ensure contain alphabets, numbers and dashes only',
+                'message': 'file_id value should be ensure contain alphabets, numbers and dashes only',
                 'target': 'file_id'
             }
         }, 422
@@ -129,7 +129,7 @@ def create_task():
         return {
             'error': {
                 'code': 'ExceedMaximum',
-                'message': 'field length should be less 128 characters',
+                'message': 'file_id length should be less 128 characters',
                 'target': 'file_id'
             }
         }, 422
@@ -149,7 +149,7 @@ def create_task():
     task: Task = Task(
         uuid=uuid.uuid4(),
         file_id=file_id,
-        file_url=str(file_url),
+        file_url=file_url.geturl(),
         finetune_args=json.dumps({
             'is_ocr': enable_ocr,
             'enable_formula': enable_formula,
