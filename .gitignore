@@ -4,7 +4,6 @@ __pycache__/
 *$py.class
 
 # Flask stuff:
-instance/
 .webassets-cache
 
 # Sphinx documentation
@@ -25,4 +24,5 @@ venv/
 .vscode/
 
 # Other files
+*.http
 *.log
