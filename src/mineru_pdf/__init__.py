@@ -1,0 +1,42 @@
+__version__ = '0.0.1'
+
+def create_app():
+
+    # create flask instance
+    from flask import Flask
+    from os import environ
+    app = Flask(
+        import_name=__name__,
+        instance_path=environ.get('FLASK_INSTANCE_DIR', default=None),
+        instance_relative_config=True
+    )
+
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app)
+
+    # setup configuration
+    from .config import Default_
+    app.config.from_object(Default_(app.instance_path))
+
+    from dotenv import dotenv_values
+    from pathlib import Path
+    env_file = Path('.').resolve().joinpath('.env')
+    if env_file.exists() and env_file.is_file():
+        app.config.from_mapping(dotenv_values(env_file))
+
+    # init essential components
+    from .services import database, migrate
+    database.init_app(app)
+    migrate.init_app(
+        app, db=database,
+        directory=Path(app.root_path).joinpath('migrations'),
+        render_as_batch=True
+    )
+
+    # register blueprint
+    from .api.extract_v2 import extractor2
+    app.register_blueprint(extractor2, url_prefix='/api/v2/extract')
+
+    app.logger.info('Current Instance Path -> {}'.format(app.instance_path))
+
+    return app
