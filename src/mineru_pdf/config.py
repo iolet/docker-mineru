@@ -27,3 +27,23 @@ class Default_(object):
     @property
     def SQLALCHEMY_DATABASE_URI(self)-> Optional[str]:
         return None
+
+    ###
+    ### Celery
+    ###
+
+    @property
+    def CELERY_BROKER_URL(self) -> Optional[str]:
+        return None
+
+    @property
+    def CELERY_BROKER_TRANSPORT_OPTIONS(self) -> Optional[str]:
+        return None
+
+    @property
+    def CELERY_RESULT_BACKEND(self) -> Optional[str]:
+        return None
+
+    @property
+    def CELERY_RESULT_BACKEND_TRANSPORT_OPTIONS(self) -> Optional[str]:
+        return None

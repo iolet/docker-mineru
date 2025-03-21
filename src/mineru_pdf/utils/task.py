@@ -2,7 +2,6 @@
 class Result(object):
 
     NONE_: str = 'NONE'
-    STARTING: str = 'STARTING'
     COLLECTING: str = 'COLLECTING'
     INFERRING: str = 'INFERRING'
     PACKING: str = 'PACKING'

@@ -11,6 +11,7 @@ from sqlalchemy import select
 from werkzeug.exceptions import BadRequest, UnsupportedMediaType
 
 from ..models import Task, database
+from ..tasks.extractions import extract_pdf
 from ..utils.task import Result, Status
 from ..utils.presenters import TaskSchema
 
@@ -156,7 +157,7 @@ def create_task():
             'enable_table': enable_table,
             'lang': prefer_language,
         }),
-        callback_url=callback_url,
+        callback_url=callback_url.geturl() if isinstance(callback_url, ParseResult) else '',
         status=Status.CREATED,
         result=Result.NONE_,
         created_at=arrow.now(current_app.config.get('TIMEZONE')),
@@ -166,7 +167,8 @@ def create_task():
     database.session.add(task)
     database.session.commit()
 
-    # todo add to queue
+    # delivery to queue
+    extract_pdf.delay(task.id)
 
     return {
         'data': {

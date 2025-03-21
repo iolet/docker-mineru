@@ -37,6 +37,10 @@ def create_app():
     from .api.extract_v2 import extractor2
     app.register_blueprint(extractor2, url_prefix='/api/v2/extract')
 
+    # integrate celery with flask
+    from .utils.integrators import integrate_celery
+    integrate_celery(app)
+
     app.logger.info('Current Instance Path -> {}'.format(app.instance_path))
 
     return app
