@@ -1,5 +1,7 @@
+from enum import Enum
 
-class Result(object):
+
+class Result(Enum):
 
     NONE_: str = 'NONE'
     COLLECTING: str = 'COLLECTING'
@@ -8,7 +10,7 @@ class Result(object):
     CLEANING: str = 'CLEANING'
     FINISHED: str = 'FINISHED'
 
-class Status(object):
+class Status(Enum):
 
     CREATED: str = 'CREATED'
     RUNNING: str = 'RUNNING'
