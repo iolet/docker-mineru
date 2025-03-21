@@ -15,7 +15,7 @@ def download_file(uri: str, sink: Path) -> Path:
 
     return sink
 
-def calc_sha256sum(file_path: Path) -> str:
+def calc_sha256sum(file_path: Path, prefix_algo: bool = True) -> str:
 
     hash_func = hashlib.new('sha256')
 
@@ -23,4 +23,6 @@ def calc_sha256sum(file_path: Path) -> str:
         while chunk := f.read(8192):
             hash_func.update(chunk)
 
-    return hash_func.hexdigest()
+    algo_prefix: str = 'sha256:' if prefix_algo else ''
+
+    return algo_prefix + hash_func.hexdigest()
