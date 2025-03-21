@@ -7,8 +7,8 @@ from typing import Optional
 
 import arrow
 import requests
-from flask import current_app
 from dateutil import tz
+from flask import current_app
 
 from ..models import Task
 from ..utils.presenters import TaskSchema
@@ -50,14 +50,22 @@ def post_callback(task: Task) -> None:
     if task.callback_url.isspace():
         return
 
-    requests.post(task.callback_url, json={
+    payload: dict = {
         'content': TaskSchema().dump(task),
         'signature': hmac.digest(
             key=task.tarball_checksum,
             msg=task.uuid,
             digest=hashlib.sha256
         )
-    })
+    }
+
+    for i in range(5):
+        with requests.post(task.callback_url, json=payload) as r:
+            try:
+                r.raise_for_status()
+                break;
+            except requests.HTTPError as e:
+                pass
 
 def semantic_repl(task: Task) -> str:
 

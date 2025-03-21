@@ -13,7 +13,9 @@ from sqlalchemy.exc import NoResultFound
 
 from ..models import Task
 from ..services import database
-from ..utils.extract import confirm_archivedir, create_workdir, semantic_repl
+from ..utils.extract import (
+    confirm_archivedir, create_workdir, semantic_repl, post_callback
+)
 from ..utils.http import calc_sha256sum, download_file
 from ..utils.task import Result, Status
 
@@ -102,5 +104,11 @@ def extract_pdf(task_id: int) -> int:
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE'))
     task.finished_at = arrow.now(current_app.config.get('TIMEZONE'))
     database.session.commit()
+
+    # post callback
+    try:
+        post_callback(task)
+    except Exception as e:
+        logger.warning(e, exc_info=True)
 
     return 0
