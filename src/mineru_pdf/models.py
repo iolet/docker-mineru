@@ -16,8 +16,6 @@ class Task(database.Model):
     file_url: Mapped[str] = mapped_column(String(2048), nullable=False, default='', insert_default='')
     finetune_args: Mapped[str] = mapped_column(String(2048), nullable=False, default='', insert_default='')
     callback_url: Mapped[Optional[str]] = mapped_column(String(2048), nullable=False, default='', insert_default='')
-    input_from: Mapped[str] = mapped_column(String(255), nullable=False, default='', insert_default='')
-    output_to: Mapped[str] = mapped_column(String(255), nullable=False, default='', insert_default='')
     tarball_location: Mapped[str] = mapped_column(String(2048), nullable=False, default='', insert_default='')
     tarball_checksum: Mapped[str] = mapped_column(String(255), nullable=False, default='', insert_default='')
     status: Mapped[str] = mapped_column(String(32), nullable=False, default='', insert_default='')
