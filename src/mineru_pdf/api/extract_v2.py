@@ -52,18 +52,18 @@ def create_task():
             },
         }, 422
 
-    enable_ocr: Union[bool, str] = payload.get('enable_ocr', False)
-    if enable_ocr in ['yes', 'true', True]:
-        enable_ocr: bool = True
-    elif enable_ocr in ['no', 'false', False]:
-        enable_ocr: bool = False
+    apply_ocr: Union[bool, str] = payload.get('apply_ocr', False)
+    if apply_ocr in ['yes', 'true', True]:
+        apply_ocr: bool = True
+    elif apply_ocr in ['no', 'false', False]:
+        apply_ocr: bool = False
     else:
         return {
             'error': {
                 'code': 'UnsupportedValue',
-                'message': f'unknown value {enable_ocr},'
+                'message': f'unknown value {apply_ocr},'
                            f'only support bool (true, false) or string (true false yes and no)',
-                'target': 'enable_ocr'
+                'target': 'apply_ocr'
             }
         }, 422
 
@@ -152,10 +152,10 @@ def create_task():
         file_id=file_id,
         file_url=file_url.geturl(),
         finetune_args=json.dumps({
-            'is_ocr': enable_ocr,
+            'apply_ocr': apply_ocr,
             'enable_formula': enable_formula,
             'enable_table': enable_table,
-            'lang': prefer_language,
+            'target_language': prefer_language,
         }),
         callback_url=callback_url.geturl() if isinstance(callback_url, ParseResult) else '',
         status=Status.CREATED,

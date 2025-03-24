@@ -1,4 +1,5 @@
 import logging
+import json
 import shutil
 import tarfile
 from pathlib import Path
@@ -17,6 +18,7 @@ from ..utils.extract import (
     confirm_archivedir, create_workdir, semantic_repl, post_callback
 )
 from ..utils.http import calc_sha256sum, download_file
+from ..utils.magicpdf import parse_pdf, tune_args
 from ..utils.task import Result, Status
 
 logger = logging.getLogger(__name__)
@@ -72,9 +74,22 @@ def extract_pdf(task_id: int) -> int:
     if not output_dir.exists():
         output_dir.mkdir(exist_ok=True)
 
-    with Path(output_dir).joinpath('sample.txt').open('wt') as f:
-        f.write(folder)
-    logger.info(f'infect file {pdf_file}')
+    try:
+        fine_args = tune_args(
+            json.loads(task.finetune_args)
+        )
+    except json.decoder.JSONDecodeError as e1:
+        logger.warning(e1, exc_info=True)
+        fine_args = {}
+    except TypeError as e2:
+        logger.warning(e2, exc_info=True)
+        fine_args = {}
+
+    try:
+        parse_pdf(pdf_file, output_dir, **fine_args)
+    except Exception as e:
+        logger.exception(e)
+        return 255
 
     # packing result
     task.result = Result.PACKING
