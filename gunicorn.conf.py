@@ -1,0 +1,106 @@
+from pathlib import Path
+from datetime import time
+
+# loading target application
+wsgi_app = 'src.mineru_pdf:create_app()'
+
+# listen address and port
+bind = ['0.0.0.0:8889']
+
+# worker process
+workers = 1
+
+# maximum number of requests a worker will process before restarting
+max_requests = 12
+
+# maximum jitter to add the max_requests
+max_requests_jitter = 4
+
+# pretty process naming
+proc_name = 'mineru_pdf'
+
+# does not daemonize, avoid supervisor missing status track and
+# try restarting again until fails
+daemon = False
+
+# recommended use memory filesystem path to avoid slow response
+worker_tmp_dir = '/tmp'
+
+# workers silent for more than this may seconds are killed and restarted
+timeout = 7200
+
+# logging handle global, added thread number and logger name
+logconfig_dict = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'root': {
+        'level': 'INFO',
+        'handlers': ['console_stdout']
+    },
+    'loggers': {
+        'app': {
+            'level': 'INFO',
+            'handlers': ['application'],
+            'propagate': True
+        },
+        'gunicorn.access': {
+            'level': 'INFO',
+            'handlers': ['access_log'],
+            'propagate': True,
+            'qualname': 'gunicorn.access'
+        },
+        'gunicorn.error': {
+            'level': 'INFO',
+            'handlers': ['console_stderr'],
+            'propagate': True,
+            'qualname': 'gunicorn.error'
+        }
+    },
+    'handlers': {
+        'application': {
+            'class': 'concurrent_log_handler.ConcurrentTimedRotatingFileHandler',
+            'formatter': 'generic',
+            'filename': Path(__file__).parent.joinpath('instance', 'logs', 'flask.log'),
+            'when': 'midnight',
+            'backupCount': 24,
+            'delay': True,
+            'atTime': time(0, 0, 0, 0)
+        },
+        'access_log': {
+            'class': 'concurrent_log_handler.ConcurrentTimedRotatingFileHandler',
+            'formatter': 'access_log',
+            'filename': Path(__file__).parent.joinpath('instance', 'logs', 'access.log'),
+            'when': 'midnight',
+            'backupCount': 24,
+            'delay': True,
+            'atTime': time(0, 0, 0, 0)
+        },
+        'console_stdout': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'generic',
+            'stream': 'ext://sys.stdout'
+        },
+        'console_stderr': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'generic',
+            'stream': 'ext://sys.stderr'
+        },
+    },
+    'formatters': {
+        'access_log': {
+            'format': '%(message)s"',
+            'class': 'logging.Formatter'
+        },
+        'generic': {
+            'format': '%(asctime)s [%(process)d] [%(thread)d] [%(name)s::%(funcName)s:L%(lineno)d] [%(levelname)s] %(message)s',
+            'datefmt': '[%Y-%m-%d %H:%M:%S %z]',
+            'class': 'logging.Formatter'
+        }
+    }
+}
+
+# set log level to info
+loglevel = 'info'
+
+# does not redirect access log to syslog
+disable_redirect_access_to_syslog = True
