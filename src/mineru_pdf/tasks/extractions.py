@@ -1,7 +1,6 @@
 import logging
 import json
 import shutil
-import tarfile
 from pathlib import Path
 from typing import Optional
 
@@ -15,7 +14,8 @@ from sqlalchemy.exc import NoResultFound
 from ..models import Task
 from ..services import database
 from ..utils.extract import (
-    confirm_archivedir, create_workdir, semantic_repl, post_callback
+    confirm_archivedir, create_workdir, create_zipfile,
+    semantic_repl, post_callback
 )
 from ..utils.http import calc_sha256sum, download_file
 from ..utils.magicpdf import parse_pdf, tune_args
@@ -97,9 +97,9 @@ def extract_pdf(task_id: int) -> int:
     database.session.commit()
 
     moment = arrow.now(current_app.config.get('TIMEZONE'))
-    tarball: Path = confirm_archivedir(moment).joinpath(folder).with_suffix('.tar.xz')
-    with tarfile.open(name=tarball, mode='x:xz') as tar:
-        tar.add(name=workdir)
+    tarball: Path = create_zipfile(
+        confirm_archivedir(moment).joinpath(folder).with_suffix('.zip'), workdir
+    )
 
     task.tarball_location = str(tarball.relative_to(current_app.instance_path))
     task.tarball_checksum = calc_sha256sum(tarball)

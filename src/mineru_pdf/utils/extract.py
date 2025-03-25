@@ -1,6 +1,7 @@
 import hashlib
 import hmac
 import logging
+import zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -41,6 +42,20 @@ def create_workdir(folder_name: str) -> Path:
         workdir.mkdir(parents=True, exist_ok=True)
 
     return workdir
+
+def create_zipfile(zip_file: Path, target_dir: Path) -> Path:
+
+    if not zip_file.parent.is_dir() or zip_file.exists():
+        raise ValueError(f"The provided zip_file {zip_file} is not a valid file path or exists")
+
+    if not target_dir.is_dir():
+        raise ValueError(f"The provided path {target_dir} is not a valid directory.")
+
+    with zipfile.ZipFile(zip_file, 'x', zipfile.ZIP_DEFLATED) as tar:
+        for file in target_dir.rglob('*'):
+            tar.write(file, file.relative_to(target_dir))
+
+    return zip_file
 
 def post_callback(task: Task) -> None:
 
