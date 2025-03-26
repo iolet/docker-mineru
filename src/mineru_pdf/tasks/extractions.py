@@ -18,7 +18,7 @@ from ..utils.extract import (
     semantic_repl, post_callback
 )
 from ..utils.http import calc_sha256sum, download_file
-from ..utils.magicpdf import parse_pdf, tune_args
+from ..utils.magicfile import tune_spell, magic_file
 from ..utils.task import Result, Status
 
 logger = logging.getLogger(__name__)
@@ -75,7 +75,7 @@ def extract_pdf(task_id: int) -> int:
         output_dir.mkdir(exist_ok=True)
 
     try:
-        fine_args = tune_args(
+        fine_args = tune_spell(
             json.loads(task.finetune_args)
         )
     except json.decoder.JSONDecodeError as e1:
@@ -86,7 +86,7 @@ def extract_pdf(task_id: int) -> int:
         fine_args = {}
 
     try:
-        parse_pdf(pdf_file, output_dir, **fine_args)
+        magic_file(pdf_file, output_dir, **fine_args)
     except Exception as e:
         logger.exception(e)
         return 255

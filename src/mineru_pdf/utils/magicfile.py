@@ -8,7 +8,7 @@ from magic_pdf.operators.models import InferenceResult
 from magic_pdf.operators.pipes import PipeResult
 
 
-def tune_args(input_args: dict) -> dict:
+def tune_spell(input_args: dict) -> dict:
 
     input_args.setdefault('apply_ocr', True)
     if not isinstance(input_args['apply_ocr'], bool):
@@ -43,7 +43,7 @@ def tune_args(input_args: dict) -> dict:
         'layout_model': None
     }
 
-def parse_pdf(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
+def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
 
     txt_dir = output_dir.resolve()
     if not txt_dir.exists() or txt_dir.is_file():

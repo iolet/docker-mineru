@@ -4,7 +4,7 @@ import click
 from filename_sanitizer import sanitize_path_fragment
 from flask import Blueprint
 
-from ..utils.magicpdf import parse_pdf
+from ..utils.magicfile import magic_file
 
 
 extraction = Blueprint('cli_extract', __name__, cli_group=None)
@@ -32,7 +32,7 @@ def extract(input_file, output_dir, table, formula):
 
     dest_path.mkdir()
 
-    parse_pdf(src_file, dest_path, formula_enable=formula, table_enable=table)
+    magic_file(src_file, dest_path, formula_enable=formula, table_enable=table)
 
     click.echo(f'output to {dest_path}.')
 
