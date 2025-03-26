@@ -35,7 +35,9 @@ def create_app():
 
     # register blueprint
     from .api.extract_v2 import extractor2
+    from .cli.extraction import extraction
     app.register_blueprint(extractor2, url_prefix='/api/v2/extract')
+    app.register_blueprint(extraction)
 
     # integrate celery with flask
     from .utils.integrators import integrate_celery
