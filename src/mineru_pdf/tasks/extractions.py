@@ -18,7 +18,6 @@ from ..utils.extract import (
     semantic_repl, post_callback
 )
 from ..utils.http import calc_sha256sum, download_file
-from ..utils.magicfile import tune_spell
 from ..utils.task import Result, Status
 
 logger = logging.getLogger(__name__)
@@ -73,6 +72,9 @@ def extract_pdf(task_id: int) -> int:
     output_dir: Path = workdir.joinpath('output')
     if not output_dir.exists():
         output_dir.mkdir(exist_ok=True)
+
+    if not 'tune_spell' in globals():
+        from ..utils.magicfile import tune_spell
 
     try:
         fine_args = tune_spell(

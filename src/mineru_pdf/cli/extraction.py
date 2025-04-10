@@ -4,8 +4,6 @@ import click
 from filename_sanitizer import sanitize_path_fragment
 from flask import Blueprint
 
-from ..utils.magicfile import magic_file
-
 
 extraction = Blueprint('cli_extract', __name__, cli_group=None)
 
@@ -31,6 +29,9 @@ def extract(input_file, output_dir, table, formula):
         return 3
 
     dest_path.mkdir()
+
+    if not 'magic_file' in globals():
+        from ..utils.magicfile import magic_file
 
     magic_file(src_file, dest_path, formula_enable=formula, table_enable=table)
 
