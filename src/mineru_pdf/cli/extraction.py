@@ -5,7 +5,7 @@ from filename_sanitizer import sanitize_path_fragment
 from flask import Blueprint
 
 
-extraction = Blueprint('cli_extract', __name__, cli_group=None)
+extraction = Blueprint('cli_extraction', __name__, cli_group=None)
 
 @extraction.cli.command('extract')
 @click.argument('input_file', type=click.Path(exists=True, dir_okay=False, file_okay=True))
