@@ -18,7 +18,7 @@ from ..utils.extract import (
     semantic_repl, post_callback
 )
 from ..utils.http import calc_sha256sum, download_file
-from ..utils.magicfile import tune_spell, magic_file
+from ..utils.magicfile import tune_spell
 from ..utils.task import Result, Status
 
 logger = logging.getLogger(__name__)
@@ -40,8 +40,8 @@ def extract_pdf(task_id: int) -> int:
 
     task.status = Status.RUNNING
     task.result = Result.NONE_
-    task.started_at = arrow.now(current_app.config.get('TIMEZONE'))
-    task.updated_at = arrow.now(current_app.config.get('TIMEZONE'))
+    task.started_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
     database.session.commit()
 
     # prepare workdir
@@ -51,7 +51,7 @@ def extract_pdf(task_id: int) -> int:
 
     # download file
     task.result = Result.COLLECTING
-    task.updated_at = arrow.now(current_app.config.get('TIMEZONE'))
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
     database.session.commit()
 
     try:
@@ -66,10 +66,10 @@ def extract_pdf(task_id: int) -> int:
 
     # infect content
     task.result = Result.INFERRING
-    task.updated_at = arrow.now(current_app.config.get('TIMEZONE'))
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
     database.session.commit()
 
-    moment = arrow.now(current_app.config.get('TIMEZONE'))
+    moment = arrow.now(current_app.config.get('TIMEZONE')).datetime
     output_dir: Path = workdir.joinpath('output')
     if not output_dir.exists():
         output_dir.mkdir(exist_ok=True)
@@ -85,18 +85,23 @@ def extract_pdf(task_id: int) -> int:
         logger.warning(e2, exc_info=True)
         fine_args = {}
 
+    if not 'magic_file' in globals():
+        from ..utils.magicfile import magic_file
+
     try:
         magic_file(pdf_file, output_dir, **fine_args)
     except Exception as e:
         logger.exception(e)
+        task.status = Status.TERMINATED
+        database.session.commit()
         return 255
 
     # packing result
     task.result = Result.PACKING
-    task.updated_at = arrow.now(current_app.config.get('TIMEZONE'))
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
     database.session.commit()
 
-    moment = arrow.now(current_app.config.get('TIMEZONE'))
+    moment = arrow.now(current_app.config.get('TIMEZONE')).datetime
     tarball: Path = create_zipfile(
         confirm_archivedir(moment).joinpath(folder).with_suffix('.zip'), workdir
     )
@@ -107,7 +112,7 @@ def extract_pdf(task_id: int) -> int:
 
     # clean workarea
     task.result = Result.CLEANING
-    task.updated_at = arrow.now(current_app.config.get('TIMEZONE'))
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
     database.session.commit()
 
     if tarball.exists():
@@ -116,8 +121,8 @@ def extract_pdf(task_id: int) -> int:
     # mark as completed
     task.status = Status.COMPLETED
     task.result = Result.FINISHED
-    task.updated_at = arrow.now(current_app.config.get('TIMEZONE'))
-    task.finished_at = arrow.now(current_app.config.get('TIMEZONE'))
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+    task.finished_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
     database.session.commit()
 
     # post callback

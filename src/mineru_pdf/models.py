@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import BigInteger, String, TIMESTAMP
+from sqlalchemy import INTEGER, String, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .services import database
@@ -9,8 +9,9 @@ from .services import database
 class Task(database.Model):
 
     __tablename__ = 'tasks'
+    __table_args__ = {'sqlite_autoincrement': True}
 
-    id: Mapped[int] = mapped_column(BigInteger(), primary_key=True, nullable=False)
+    id: Mapped[int] = mapped_column(INTEGER(), primary_key=True, autoincrement=True, nullable=False)
     uuid: Mapped[str] = mapped_column(String(128), nullable=False, default='', insert_default='')
     file_id: Mapped[str] = mapped_column(String(128), nullable=False, default='', insert_default='')
     file_url: Mapped[str] = mapped_column(String(2048), nullable=False, default='', insert_default='')
