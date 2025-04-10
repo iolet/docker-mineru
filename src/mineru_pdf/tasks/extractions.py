@@ -100,7 +100,7 @@ def extract_pdf(task_id: int) -> int:
 
     moment = arrow.now(current_app.config.get('TIMEZONE'))
     tarball: Path = create_zipfile(
-        confirm_archivedir(moment).joinpath(folder, '.zip'), workdir
+        confirm_archivedir(moment).joinpath(folder + '.zip'), workdir
     )
 
     task.tarball_location = str(tarball.relative_to(current_app.instance_path))
