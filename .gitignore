@@ -27,5 +27,7 @@ venv/
 .pytest_cache
 
 # Other files
+instance/*.db
+instance/*.sqlite
 *.http
 *.log
