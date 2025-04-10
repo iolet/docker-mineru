@@ -52,7 +52,7 @@ def create_task():
             },
         }, 422
 
-    apply_ocr: Union[bool, str] = payload.get('apply_ocr', False)
+    apply_ocr: Union[bool, str] = payload.get('apply_ocr', True)
     if apply_ocr in ['yes', 'true', True]:
         apply_ocr: bool = True
     elif apply_ocr in ['no', 'false', False]:
@@ -67,7 +67,7 @@ def create_task():
             }
         }, 422
 
-    enable_table: Union[bool, str] = payload.get('enable_table', True)
+    enable_table: Union[bool, str] = payload.get('enable_table', False)
     if enable_table in ['yes', 'true', True]:
         enable_table: bool = True
     elif enable_table in ['no', 'false', False]:
