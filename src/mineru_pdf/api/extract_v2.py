@@ -1,9 +1,9 @@
 import json
 import logging
-import uuid
 from re import sub as preg_replace
 from typing import Optional, Union
 from urllib.parse import ParseResult, urlparse
+from uuid import uuid4
 
 import arrow
 from flask import Blueprint, current_app, request
@@ -148,7 +148,7 @@ def create_task():
         }, 422
 
     task: Task = Task(
-        uuid=uuid.uuid4(),
+        uuid=str(uuid4()),
         file_id=file_id,
         file_url=file_url.geturl(),
         finetune_args=json.dumps({
@@ -160,8 +160,8 @@ def create_task():
         callback_url=callback_url.geturl() if isinstance(callback_url, ParseResult) else '',
         status=Status.CREATED,
         result=Result.NONE_,
-        created_at=arrow.now(current_app.config.get('TIMEZONE')),
-        updated_at=arrow.now(current_app.config.get('TIMEZONE'))
+        created_at=arrow.now(current_app.config.get('TIMEZONE')).datetime,
+        updated_at=arrow.now(current_app.config.get('TIMEZONE')).datetime
     )
 
     database.session.add(task)
