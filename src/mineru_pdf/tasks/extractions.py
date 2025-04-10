@@ -68,11 +68,6 @@ def extract_pdf(task_id: int) -> int:
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
     database.session.commit()
 
-    moment = arrow.now(current_app.config.get('TIMEZONE'))
-    output_dir: Path = workdir.joinpath('output')
-    if not output_dir.exists():
-        output_dir.mkdir(exist_ok=True)
-
     if not 'tune_spell' in globals():
         from ..utils.magicfile import tune_spell
 
@@ -91,7 +86,7 @@ def extract_pdf(task_id: int) -> int:
         from ..utils.magicfile import magic_file
 
     try:
-        magic_file(pdf_file, output_dir, **fine_args)
+        magic_file(pdf_file, workdir, **fine_args)
     except Exception as e:
         logger.exception(e)
         task.status = Status.TERMINATED
@@ -105,7 +100,7 @@ def extract_pdf(task_id: int) -> int:
 
     moment = arrow.now(current_app.config.get('TIMEZONE'))
     tarball: Path = create_zipfile(
-        confirm_archivedir(moment).joinpath(folder).with_suffix('.zip'), workdir
+        confirm_archivedir(moment).joinpath(folder, '.zip'), workdir
     )
 
     task.tarball_location = str(tarball.relative_to(current_app.instance_path))
