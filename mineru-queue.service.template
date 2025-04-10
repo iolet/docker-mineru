@@ -1,0 +1,37 @@
+# Template for systemd service unit
+#
+# you should according following steps render to configure file:
+#
+#   1) set variables APP_WORKDIR and VENV_PREFIX
+#       export APP_WORKDIR=/var/www/mineru-pdf/current
+#       export VENV_PREFIX=/var/www/mineru-pdf/venv
+#
+#   2) run envsubst command render configure file
+#       envsubst < mineru-queue.service.template
+#
+#   3) copy (or move) render result to systemd user folder
+#       .config/systemd/user
+[Unit]
+Description=MinerU pdf to markdown convertor
+
+[Service]
+Environment=PYTHONUNBUFFERED=1
+# if you have issue like unable to load any of libcudnn.so.*,
+# you can comment out following line to address
+# Environment=LD_LIBRARY_PATH=${VENV_PREFIX}/lib/python3.10/site-packages/nvidia/cudnn/lib
+WorkingDirectory=${APP_WORKDIR}
+ExecStart=${VENV_PREFIX}/bin/celery \
+    --app src.mineru_pdf.celery.app \
+    worker \
+    --concurrency 1 \
+    --time-limit 1800 \
+    --soft-time-limit 1500 \
+    --max-tasks-per-child 10 \
+    --loglevel DEBUG
+Restart=always
+RestartSec=10
+KillMode=mixed
+Type=simple
+
+[Install]
+WantedBy=default.target

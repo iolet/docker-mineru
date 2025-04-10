@@ -1,0 +1,26 @@
+# Template for systemd service unit
+#
+# you should according following steps render to configure file:
+#
+#   1) set variables APP_WORKDIR and VENV_PREFIX
+#       export APP_WORKDIR=/var/www/mineru-pdf/current
+#       export VENV_PREFIX=/var/www/mineru-pdf/venv
+#
+#   2) run envsubst command render configure file
+#       envsubst < mineru-app.service.template
+#
+#   3) copy (or move) render result to systemd user folder
+#       .config/systemd/user
+[Unit]
+Description=MinerU pdf to markdown convertor
+
+[Service]
+WorkingDirectory=${APP_WORKDIR}
+ExecStart=${VENV_PREFIX}/bin/gunicorn
+Restart=always
+RestartSec=10
+KillMode=mixed
+Type=simple
+
+[Install]
+WantedBy=default.target
