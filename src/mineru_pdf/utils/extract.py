@@ -67,11 +67,11 @@ def post_callback(task: Task) -> None:
 
     payload: dict = {
         'content': TaskSchema().dump(task),
-        'signature': hmac.digest(
-            key=task.tarball_checksum,
-            msg=task.uuid,
+        'signature': hmac.new(
+            key=bytes.fromhex(task.tarball_checksum),
+            msg=task.uuid.encode(),
             digest=hashlib.sha256
-        )
+        ).hexdigest()
     }
 
     for i in range(5):

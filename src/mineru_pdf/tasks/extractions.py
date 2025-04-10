@@ -68,7 +68,7 @@ def extract_pdf(task_id: int) -> int:
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
     database.session.commit()
 
-    moment = arrow.now(current_app.config.get('TIMEZONE')).datetime
+    moment = arrow.now(current_app.config.get('TIMEZONE'))
     output_dir: Path = workdir.joinpath('output')
     if not output_dir.exists():
         output_dir.mkdir(exist_ok=True)
@@ -103,7 +103,7 @@ def extract_pdf(task_id: int) -> int:
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
     database.session.commit()
 
-    moment = arrow.now(current_app.config.get('TIMEZONE')).datetime
+    moment = arrow.now(current_app.config.get('TIMEZONE'))
     tarball: Path = create_zipfile(
         confirm_archivedir(moment).joinpath(folder).with_suffix('.zip'), workdir
     )

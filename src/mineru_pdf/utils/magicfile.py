@@ -71,11 +71,17 @@ def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
 
     if tune_args['ocr']:
         pipped_result: PipeResult = inferred_result.pipe_ocr_mode(
-            img_writer, **tune_args
+            imageWriter=img_writer,
+            start_page_id=tune_args.get('start_page_id', 0),
+            end_page_id=tune_args.get('start_page_id', None),
+            lang=tune_args.get('lang', None)
         )
     else:
         pipped_result: PipeResult = inferred_result.pipe_txt_mode(
-            img_writer, **tune_args
+            imageWriter=img_writer,
+            start_page_id=tune_args.get('start_page_id', 0),
+            end_page_id=tune_args.get('start_page_id', None),
+            lang=tune_args.get('lang', None)
         )
 
     # dump content list
