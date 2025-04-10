@@ -195,6 +195,13 @@ def query_task(task_id: str):
             },
         }, 404
 
+    host: str = request.host_url
+    data: dict = TaskSchema().dump(task)
+
+    if 'tarball' in data:
+        if 'location' in data['tarball']:
+            data['tarball']['location'] = host + data['tarball']['location']
+
     return {
-        'data': TaskSchema().dump(task)
+        'data': data
     }, 200

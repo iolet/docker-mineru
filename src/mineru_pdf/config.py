@@ -9,7 +9,11 @@ class Default_(object):
 
     @property
     def APP_NAME(self) -> str:
-        return 'mineru_pdf'
+        return 'mineru-pdf'
+
+    @property
+    def APP_URL(self) -> str:
+        return 'http://localhost:5000'
 
     @property
     def TIMEZONE(self) -> str:
