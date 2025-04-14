@@ -1,5 +1,3 @@
-import hashlib
-import hmac
 import logging
 import zipfile
 from datetime import datetime
@@ -65,13 +63,17 @@ def post_callback(task: Task) -> None:
     if task.callback_url.isspace():
         return
 
+    host: str = current_app.config['APP_URL']
+    data: dict = TaskSchema().dump(task)
+
+    if 'tarball' in data:
+        if 'location' in data['tarball']:
+            data['tarball']['location'] = '/'.join([
+                host.rstrip('/'), str(data['tarball']['location']).lstrip('/')
+            ])
+
     payload: dict = {
-        'content': TaskSchema().dump(task),
-        'signature': hmac.new(
-            key=bytes.fromhex(task.tarball_checksum),
-            msg=task.uuid.encode(),
-            digest=hashlib.sha256
-        ).hexdigest()
+        'data': data
     }
 
     for i in range(5):
