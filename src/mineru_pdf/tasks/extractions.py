@@ -13,12 +13,9 @@ from sqlalchemy.exc import NoResultFound
 
 from ..models import Task
 from ..services import database
-from ..utils.http import calc_sha256sum, download_file
-from ..utils.task import (
-    Result, Status, as_semantic,
-    create_savedir, create_workdir,
-    create_zipfile, post_callback
-)
+from ..utils.filepath import as_semantic, create_savedir, create_workdir, create_zipfile
+from ..utils.http import calc_sha256sum, download_file, post_callback
+from ..utils.task import Result, Status
 
 logger = logging.getLogger(__name__)
 
