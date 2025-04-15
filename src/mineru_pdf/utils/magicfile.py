@@ -92,10 +92,9 @@ def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
 
     except Exception as e:
 
-        logger.exception(e)
-
         # shall we release gpu memory when infer failed
         if torch.cuda.is_available():
+            torch.cuda.synchronize()
             torch.cuda.empty_cache()
             torch.cuda.ipc_collect()
 
