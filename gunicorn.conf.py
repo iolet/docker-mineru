@@ -1,5 +1,5 @@
-from pathlib import Path
 from datetime import time
+from pathlib import Path
 
 # loading target application
 wsgi_app = 'src.mineru_pdf:create_app()'
@@ -38,7 +38,7 @@ logconfig_dict = {
         'handlers': ['console_stdout']
     },
     'loggers': {
-        'app': {
+        'src': {
             'level': 'INFO',
             'handlers': ['application'],
             'propagate': True
@@ -51,7 +51,7 @@ logconfig_dict = {
         },
         'gunicorn.error': {
             'level': 'INFO',
-            'handlers': ['console_stderr'],
+            'handlers': ['console_stdout'],
             'propagate': True,
             'qualname': 'gunicorn.error'
         }
@@ -79,11 +79,6 @@ logconfig_dict = {
             'class': 'logging.StreamHandler',
             'formatter': 'generic',
             'stream': 'ext://sys.stdout'
-        },
-        'console_stderr': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'generic',
-            'stream': 'ext://sys.stderr'
         },
     },
     'formatters': {

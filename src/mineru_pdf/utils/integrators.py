@@ -37,6 +37,7 @@ def integrate_celery(app: Flask) -> Celery:
         })
 
     config['broker_connection_retry_on_startup'] = True
+    config['worker_hijack_root_logger'] = False
 
     celery_app.config_from_object(config)
     celery_app.set_default()

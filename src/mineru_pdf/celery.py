@@ -1,27 +1,39 @@
 import logging
 import logging.config
 
+from celery import Celery
+
 from . import create_app
 
-LOGGING = {
+
+logging.config.dictConfig({
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'stream': 'ext://sys.stdout',
+    'root': {
+        'level': 'INFO',
+        'handlers': ['console_stdout']
+    },
+    'loggers': {
+        'src': {
+            'level': 'DEBUG',
+            'handlers': [ 'console_stdout' ],
+            'propagate': False
         },
     },
-    'root': {
-        'handlers': ['console'],
-        'level': 'DEBUG',
+    'handlers': {
+        'console_stdout': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'generic',
+            'stream': 'ext://sys.stdout'
+        },
     },
-}
+    'formatters': {
+        'generic': {
+            'format': '%(asctime)s [%(process)d] [%(thread)d] [%(name)s::%(funcName)s:L%(lineno)d] [%(levelname)s] %(message)s',
+            'datefmt': '[%Y-%m-%d %H:%M:%S %z]',
+            'class': 'logging.Formatter'
+        }
+    }
+})
 
-logging.config.dictConfig(LOGGING)
-
-app = create_app().extensions["celery"]
-
-app.conf.update(
-    worker_hijack_root_logger=False
-)
+app: Celery = create_app().extensions["celery"]
