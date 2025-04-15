@@ -66,7 +66,7 @@ def post_callback(task: Task) -> None:
         with requests.post(task.callback_url, json=payload) as r:
             try:
                 r.raise_for_status()
-                logger.info(f'posted callback <{task.callback_url}> with {r.status_code} in {i}th times successfully')
+                logger.info(f'posted callback <{task.callback_url}> with {r.status_code} in {i + 1}th times successfully')
                 break;
             except requests.HTTPError as e:
-                logger.warning(f'callback failed for <{e}> in {i}th times')
+                logger.warning(f'callback failed for <{e}> in {i + 1}th times')
