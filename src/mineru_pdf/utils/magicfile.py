@@ -90,17 +90,16 @@ def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
                 lang=tune_args.get('lang', None)
             )
 
-    except Exception as e:
+    finally:
 
-        # shall we release gpu memory when infer failed
+        # we try always release gpu memory
         if torch.cuda.is_available():
             torch.cuda.synchronize()
             torch.cuda.empty_cache()
             torch.cuda.ipc_collect()
 
+        # also release dataset
         del ds
-
-        raise e
 
     # dump content list
     pipped_result.dump_content_list(txt_writer, 'content_list.json', img_dir)
@@ -122,3 +121,7 @@ def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
         pipped_result.draw_span(str(output_dir.joinpath('spans.pdf')))
         pipped_result.draw_line_sort(str(output_dir.joinpath('line_sort.pdf')))
         inferred_result.draw_model(str(output_dir.joinpath('model.pdf')))
+
+    # release memory
+    del pipped_result
+    del inferred_result
