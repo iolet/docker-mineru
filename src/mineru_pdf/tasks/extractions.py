@@ -13,12 +13,12 @@ from sqlalchemy.exc import NoResultFound
 
 from ..models import Task
 from ..services import database
-from ..utils.extract import (
-    confirm_archivedir, create_workdir, create_zipfile,
-    semantic_repl, post_callback
-)
 from ..utils.http import calc_sha256sum, download_file
-from ..utils.task import Result, Status
+from ..utils.task import (
+    Result, Status, as_semantic,
+    create_savedir, create_workdir,
+    create_zipfile, post_callback
+)
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ def extract_pdf(task_id: int) -> int:
     database.session.commit()
 
     # prepare workdir
-    folder: str = semantic_repl(task)
+    folder: str = as_semantic(task)
     workdir: Path = create_workdir(folder)
     logger.info(f'workdir -> {workdir} folder -> {folder}')
 
@@ -100,7 +100,7 @@ def extract_pdf(task_id: int) -> int:
 
     moment = arrow.now(current_app.config.get('TIMEZONE'))
     tarball: Path = create_zipfile(
-        confirm_archivedir(moment).joinpath(folder + '.zip'), workdir
+        create_savedir(moment).joinpath(folder + '.zip'), workdir
     )
 
     task.tarball_location = str(tarball.relative_to(current_app.instance_path))

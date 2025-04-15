@@ -1,12 +1,16 @@
 import json
+import logging
 from pathlib import Path
 
+import torch
 from magic_pdf.data.data_reader_writer import FileBasedDataReader, FileBasedDataWriter
 from magic_pdf.data.dataset import PymuDocDataset
 from magic_pdf.model.doc_analyze_by_custom_model import doc_analyze
 from magic_pdf.operators.models import InferenceResult
 from magic_pdf.operators.pipes import PipeResult
 
+
+logger = logging.getLogger(__name__)
 
 def tune_spell(input_args: dict) -> dict:
 
@@ -62,27 +66,42 @@ def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
         FileBasedDataReader().read(str(input_file))
     )
 
-    # infer dataset
-    inferred_result: InferenceResult = ds.apply(doc_analyze, **tune_args)
+    try:
 
-    # pipe output
-    if 'ocr' not in tune_args:
-        raise RuntimeError('key ocr not found, please ensure exists and try again')
+        # infer dataset
+        inferred_result: InferenceResult = ds.apply(doc_analyze, **tune_args)
 
-    if tune_args['ocr']:
-        pipped_result: PipeResult = inferred_result.pipe_ocr_mode(
-            imageWriter=img_writer,
-            start_page_id=tune_args.get('start_page_id', 0),
-            end_page_id=tune_args.get('start_page_id', None),
-            lang=tune_args.get('lang', None)
-        )
-    else:
-        pipped_result: PipeResult = inferred_result.pipe_txt_mode(
-            imageWriter=img_writer,
-            start_page_id=tune_args.get('start_page_id', 0),
-            end_page_id=tune_args.get('start_page_id', None),
-            lang=tune_args.get('lang', None)
-        )
+        # pipe output
+        if 'ocr' not in tune_args:
+            raise RuntimeError('key ocr not found, please ensure exists and try again')
+
+        if tune_args['ocr']:
+            pipped_result: PipeResult = inferred_result.pipe_ocr_mode(
+                imageWriter=img_writer,
+                start_page_id=tune_args.get('start_page_id', 0),
+                end_page_id=tune_args.get('end_page_id', None),
+                lang=tune_args.get('lang', None)
+            )
+        else:
+            pipped_result: PipeResult = inferred_result.pipe_txt_mode(
+                imageWriter=img_writer,
+                start_page_id=tune_args.get('start_page_id', 0),
+                end_page_id=tune_args.get('end_page_id', None),
+                lang=tune_args.get('lang', None)
+            )
+
+    except Exception as e:
+
+        logger.exception(e)
+
+        # shall we release gpu memory when infer failed
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
+
+        del ds
+
+        raise e
 
     # dump content list
     pipped_result.dump_content_list(txt_writer, 'content_list.json', img_dir)
