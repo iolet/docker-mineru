@@ -7,7 +7,9 @@ __pycache__/
 .webassets-cache
 
 # Sphinx documentation
-docs/_build/
+/_build
+/_static
+/_templates
 
 # Celery stuff
 celerybeat-schedule
@@ -24,7 +26,7 @@ venv/
 .vscode/
 
 # pytest and unittest
-.pytest_cache
+/.pytest_cache
 
 # Other files
 instance/*.db

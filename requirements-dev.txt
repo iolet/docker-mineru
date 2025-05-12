@@ -1,0 +1,5 @@
+black==25.*
+doc8==1.*
+esbonio==0.12.*
+rstcheck==6.2.*
+sphinx-rtd-theme==3.*

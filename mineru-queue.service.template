@@ -18,7 +18,10 @@ Description=MinerU pdf to markdown convertor
 Environment=PYTHONUNBUFFERED=1
 # if you have issue like unable to load any of libcudnn.so.*,
 # you can comment out following line to address
-# Environment=LD_LIBRARY_PATH=${VENV_PREFIX}/lib/python3.10/site-packages/nvidia/cudnn/lib
+#Environment=LD_LIBRARY_PATH=${VENV_PREFIX}/lib/python3.10/site-packages/nvidia/cudnn/lib
+# if you have multiple gpu, you does not want to use default (gpu 0),
+# you can comment out following line to use specified gpu (start from zero)
+#Environment=CUDA_VISIBLE_DEVICES=1
 WorkingDirectory=${APP_WORKDIR}
 ExecStart=${VENV_PREFIX}/bin/celery \
     --app src.mineru_pdf.celery.app \
