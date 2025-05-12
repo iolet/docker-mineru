@@ -18,7 +18,7 @@ extensions = []
 root_doc = 'README'
 
 templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '.venv', 'instance', 'src']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '.venv', 'dist', 'instance', 'src']
 
 language = 'zh_CN'
 
