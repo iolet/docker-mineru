@@ -16,7 +16,7 @@ class Status(object):
 
 class Errors(object):
 
-    NONE_ = 'NONE_'
+    NONE_ = 'NONE'
 
     DNS_NXDOMAIN: str = 'DNS_NXDOMAIN'
 
