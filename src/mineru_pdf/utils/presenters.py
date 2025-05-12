@@ -19,6 +19,7 @@ class TaskSchema(Schema):
     file_id = fields.String()
     status = fields.String()
     result = fields.String()
+    errors = fields.String()
     started_at = fields.DateTime()
     finished_at = fields.DateTime()
     tarball = fields.Method('to_tarball')
