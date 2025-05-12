@@ -28,6 +28,10 @@ venv/
 # pytest and unittest
 /.pytest_cache
 
+# wheel dist
+/dist
+/_version.py
+
 # Other files
 instance/*.db
 instance/*.sqlite
