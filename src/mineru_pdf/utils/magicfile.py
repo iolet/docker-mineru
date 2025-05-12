@@ -1,6 +1,7 @@
 import json
 import logging
 from pathlib import Path
+from re import search as re_search
 
 import torch
 from magic_pdf.data.data_reader_writer import FileBasedDataReader, FileBasedDataWriter
@@ -8,6 +9,8 @@ from magic_pdf.data.dataset import PymuDocDataset
 from magic_pdf.model.doc_analyze_by_custom_model import doc_analyze
 from magic_pdf.operators.models import InferenceResult
 from magic_pdf.operators.pipes import PipeResult
+
+from ..utils.exceptions import CUDANotAvailableError, GPUOutOfMemoryError
 
 
 logger = logging.getLogger(__name__)
@@ -90,16 +93,29 @@ def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
                 lang=tune_args.get('lang', None)
             )
 
+    except ValueError as e:
+
+        pattern = r'Invalid\s+CUDA\s+\S+\s+requested.\s+Use\s+\S+\s+or\s+pass\s+valid\s+CUDA\s+device\(s\)\s+if\s+available'
+
+        if re_search(pattern, str(e)):
+            raise CUDANotAvailableError('CUDA invalid, maybe a driver issues') from e
+
+        raise e
+
+    except torch.OutOfMemoryError as e:
+
+        raise GPUOutOfMemoryError('GPU out of memory') from e
+
     finally:
 
-        # we try always release gpu memory
+        # we try release dataset first
+        del ds
+
+        # then try release gpu memory
         if torch.cuda.is_available():
             torch.cuda.synchronize()
             torch.cuda.empty_cache()
             torch.cuda.ipc_collect()
-
-        # also release dataset
-        del ds
 
     # dump content list
     pipped_result.dump_content_list(txt_writer, 'content_list.json', img_dir)

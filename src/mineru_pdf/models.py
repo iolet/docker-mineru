@@ -21,6 +21,7 @@ class Task(database.Model):
     tarball_checksum: Mapped[str] = mapped_column(String(255), nullable=False, default='', insert_default='')
     status: Mapped[str] = mapped_column(String(32), nullable=False, default='', insert_default='')
     result: Mapped[str] = mapped_column(String(32), nullable=False, default='', insert_default='')
+    errors: Mapped[str] = mapped_column(String(128), nullable=False, default='', insert_default='')
     started_at: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP(True), nullable=True)
     finished_at: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP(True), nullable=True)
     created_at: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP(True), nullable=True)

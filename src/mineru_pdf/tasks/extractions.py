@@ -13,9 +13,10 @@ from sqlalchemy.exc import NoResultFound
 
 from ..models import Task
 from ..services import database
+from ..utils.exceptions import CUDANotAvailableError, GPUOutOfMemoryError
 from ..utils.filepath import as_semantic, create_savedir, create_workdir, create_zipfile
 from ..utils.http import calc_sha256sum, download_file, post_callback
-from ..utils.task import Result, Status
+from ..utils.task import Errors, Result, Status, find_http_errors
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ def extract_pdf(task_id: int) -> int:
 
     task.status = Status.RUNNING
     task.result = Result.NONE_
+    task.errors = Errors.NONE_
     task.started_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
     database.session.commit()
@@ -57,6 +59,7 @@ def extract_pdf(task_id: int) -> int:
     except HTTPError as e:
         logger.exception(e)
         task.status = Status.TERMINATED
+        task.errors = find_http_errors(e.response.status_code)
         database.session.commit()
         return 0
 
@@ -84,9 +87,28 @@ def extract_pdf(task_id: int) -> int:
 
     try:
         magic_file(pdf_file, workdir, **fine_args)
+    except CUDANotAvailableError as e:
+        logger.exception(e)
+        task.status = Status.TERMINATED
+        task.errors = Errors.GPU_RUNTIME_ERROR
+        database.session.commit()
+        return 152
+    except GPUOutOfMemoryError as e:
+        logger.exception(e)
+        task.status = Status.TERMINATED
+        task.errors = Errors.GPU_OUT_OF_MEMORY
+        database.session.commit()
+        return 153
+    except MemoryError as e:
+        logger.exception(e)
+        task.status = Status.TERMINATED
+        task.errors = Errors.PYI_MEMORY_ERROR
+        database.session.commit()
+        return 154
     except Exception as e:
         logger.exception(e)
         task.status = Status.TERMINATED
+        task.errors = Errors.SYS_INTERNAL_ERROR
         database.session.commit()
         return 255
 
