@@ -113,7 +113,6 @@ def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
 
         # then try release gpu memory
         if torch.cuda.is_available():
-            torch.cuda.synchronize()
             torch.cuda.empty_cache()
             torch.cuda.ipc_collect()
 

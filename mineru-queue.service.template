@@ -29,6 +29,8 @@ ExecStart=${VENV_PREFIX}/bin/celery \
     --concurrency 1 \
     --time-limit 1800 \
     --soft-time-limit 1500 \
+    --optimization fair \
+    --prefetch-multiplier 1 \
     --max-tasks-per-child 10 \
     --loglevel DEBUG
 Restart=always
