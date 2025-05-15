@@ -6,22 +6,22 @@ from urllib.parse import ParseResult, urlparse
 from uuid import uuid4
 
 import arrow
-from flask import Blueprint, current_app, request
+from flask import Blueprint, current_app, jsonify, request
 from sqlalchemy import select
 from werkzeug.exceptions import BadRequest, UnsupportedMediaType
 
 from ..models import Task, database
-from ..tasks.extractions import extract_pdf
-from ..utils.task import Result, Status
+from ..tasks.constants import Errors, Result, Status
+from ..tasks.mineru import extract_pdf
 from ..utils.presenters import TaskSchema
 
 logger = logging.getLogger(__name__)
 
-extractor2: Blueprint = Blueprint('extractor2', __name__)
+tasks: Blueprint = Blueprint('tasks', __name__)
 
 
-@extractor2.post('/task')
-def create_task():
+@tasks.post('')
+def create():
 
     try:
         payload: dict = request.json
@@ -160,6 +160,7 @@ def create_task():
         callback_url=callback_url.geturl() if isinstance(callback_url, ParseResult) else '',
         status=Status.CREATED,
         result=Result.NONE_,
+        errors=Errors.NONE_,
         created_at=arrow.now(current_app.config.get('TIMEZONE')).datetime,
         updated_at=arrow.now(current_app.config.get('TIMEZONE')).datetime
     )
@@ -170,15 +171,15 @@ def create_task():
     # delivery to queue
     extract_pdf.delay(task.id)
 
-    return {
+    return jsonify({
         'data': {
             'task_id': task.uuid,
         }
-    }, 200
+    }), 200
 
 
-@extractor2.get('/task/<string:task_id>')
-def query_task(task_id: str):
+@tasks.get('<string:task_id>')
+def fetch(task_id: str):
 
     task: Optional[Task] = database.session.scalars(
         select(Task).
@@ -187,13 +188,13 @@ def query_task(task_id: str):
     ).first()
 
     if task is None:
-        return {
+        return jsonify({
             'error': {
                 'code': 'NotFound',
                 'message': 'task not found, please review task_id and try again',
                 'target': 'task_id'
             },
-        }, 404
+        }), 404
 
     host: str = request.host_url
     data: dict = TaskSchema().dump(task)
@@ -202,6 +203,6 @@ def query_task(task_id: str):
         if 'location' in data['tarball']:
             data['tarball']['location'] = host + data['tarball']['location']
 
-    return {
+    return jsonify({
         'data': data
-    }, 200
+    }), 200

@@ -3,12 +3,13 @@ from pathlib import Path
 
 import click
 from flask import current_app
-from flask import Blueprint
 
 
-storage = Blueprint('cli_storage', __name__, cli_group='storage')
+@click.group()
+def storage():
+    """Manage public storage"""
 
-@storage.cli.command('link')
+@storage.command('link')
 def link():
     """
     Create the symbolic links configured for the application
@@ -27,11 +28,11 @@ def link():
     if not dst.is_symlink():
         dst.symlink_to(src)
 
-    click.secho(f'link {src} to {dst}', fg='green')
+    click.secho(f'created {src} -> {dst}', fg='green')
 
     sys.exit(0)
 
-@storage.cli.command('unlink')
+@storage.command('unlink')
 def unlink():
     """
     Remove the symbolic links configured for the application
@@ -40,14 +41,14 @@ def unlink():
     link_: Path = Path(current_app.instance_path).joinpath('public', 'archives')
 
     if not link_.exists():
-        click.secho(f'link {link_} already cleaned', fg='green')
+        click.secho(f'removed {link_} already', fg='green')
         sys.exit(0)
 
     if not link_.is_symlink():
-        click.secho(f'link {link_} is not symlink, it maybe a issue', fg='yellow')
+        click.secho(f'{link_} is not symlink, it maybe a issue', fg='yellow')
         sys.exit(4)
 
     link_.unlink()
-    click.secho(f'link {link_} has been cleaned', fg='green')
+    click.secho(f'removed {link_}', fg='green')
 
     sys.exit(0)

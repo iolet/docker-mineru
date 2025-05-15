@@ -1,7 +1,7 @@
 from marshmallow import EXCLUDE, Schema, fields, post_dump
 
 from ..models import Task
-from ..utils.task import Status
+from ..tasks.constants import Status
 
 
 class TaskSchema(Schema):

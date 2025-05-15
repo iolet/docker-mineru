@@ -33,18 +33,26 @@ def create_app():
         render_as_batch=True
     )
 
-    # register blueprint
-    from .api.extract_v2 import extractor2
-    from .cli.extraction import extraction
+    # register commands
+    from .cli.extraction import extract
     from .cli.storage import storage
-    app.register_blueprint(extractor2, url_prefix='/api/v2/extract')
-    app.register_blueprint(extraction)
-    app.register_blueprint(storage)
+    app.cli.add_command(extract)
+    app.cli.add_command(storage)
+
+    # register blueprint
+    from .api.tasks import tasks
+    app.register_blueprint(tasks, url_prefix='/api/v2/tasks')
+    # keep compatibility only
+    app.register_blueprint(tasks, url_prefix='/api/v2/extract/task', name='extractor2')
+
+    # register fallback handler
+    from .api import handle_server_error
+    app.register_error_handler(Exception, handle_server_error)
 
     # integrate celery with flask
     from .utils.integrators import integrate_celery
     integrate_celery(app)
 
-    app.logger.info('Current Instance Path -> {}'.format(app.instance_path))
+    app.logger.info(f'Current Instance Path -> {app.instance_path}')
 
     return app
