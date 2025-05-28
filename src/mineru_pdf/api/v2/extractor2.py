@@ -10,17 +10,17 @@ from flask import Blueprint, current_app, jsonify, request
 from sqlalchemy import select
 from werkzeug.exceptions import BadRequest, UnsupportedMediaType
 
-from ..models import Task, database
-from ..tasks.constants import Errors, Result, Status
-from ..tasks.mineru import extract_pdf
-from ..utils.presenters import TaskSchema
+from ...models import Task, database
+from ...tasks.constants import Errors, Result, Status
+from ...tasks.mineru import extract_pdf
+from ...utils.presenters import TaskSchema
 
 logger = logging.getLogger(__name__)
 
-tasks: Blueprint = Blueprint('tasks', __name__)
+extractor2: Blueprint = Blueprint('extractor2', __name__)
 
 
-@tasks.post('')
+@extractor2.post('')
 def create():
 
     try:
@@ -178,7 +178,7 @@ def create():
     }), 200
 
 
-@tasks.get('<string:task_id>')
+@extractor2.get('<string:task_id>')
 def fetch(task_id: str):
 
     task: Optional[Task] = database.session.scalars(
