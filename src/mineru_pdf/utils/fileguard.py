@@ -7,12 +7,14 @@ from ..tasks.exceptions import FileEncryptionFoundError, FilePageRatioInvalidErr
 
 def file_check(input_file: Path) -> None:
 
+    document: fitz.Document = fitz.open(input_file)
+
     try:
 
-        document: fitz.Document = fitz.open(input_file)
-
-        # file should not be encrypted
-        if document.is_encrypted:
+        # file should not have any encrypted
+        # see https://pymupdf.readthedocs.io/en/latest/recipes-low-level-interfaces.html#how-to-access-the-pdf-file-trailer
+        trailer: str = document.xref_object(-1)
+        if '/Encrypt' in trailer:
             raise FileEncryptionFoundError('unsupported encrypted file')
 
         # page should be common, avoid too height or width
