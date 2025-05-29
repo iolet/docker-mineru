@@ -46,6 +46,9 @@ def create_app():
     from .api.v2.extractor2 import extractor2
     app.register_blueprint(extractor2, url_prefix='/api/v2')
 
+    from .api.v1.parser import parser
+    app.register_blueprint(parser)
+
     # register fallback handler
     from .api import handle_server_error
     app.register_error_handler(Exception, handle_server_error)
