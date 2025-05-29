@@ -7,9 +7,9 @@ from typing import Optional, Union
 
 import arrow
 from flask import Blueprint, current_app, request, jsonify
+from filename_sanitizer import sanitize_path_fragment
 from werkzeug.datastructures import FileStorage
 
-from ...tasks.exceptions import GPUOutOfMemoryError, FileEncryptionFoundError
 from ...tasks.constants import Errors
 from ...utils.fileguard import file_check
 
@@ -81,14 +81,20 @@ def pdf_parse():
             'error': 'pdf_file missing'
         }), 400
 
-    uploaded_file: FileStorage = request.files['pdf_file']
+    if '' == request.files['pdf_file'].filename:
+        return jsonify({
+            'error': 'file pdf_file not found'
+        }), 400
 
-    cache_dir: Path = Path(mkdtemp(dir=str(
+    uploaded_file: FileStorage = request.files['pdf_file']
+    timestamp: int = arrow.now(current_app.config.get('TIMEZONE')).int_timestamp
+
+    cache_dir: Path = Path(mkdtemp(prefix=f'{timestamp}.', dir=str(
         Path(current_app.instance_path).joinpath('cache').resolve()
     )))
-    input_file: Path = cache_dir.joinpath(arrow.now(
-        current_app.config.get('TIMEZONE')
-    ).int_timestamp).with_suffix('.pdf')
+    input_file: Path = cache_dir.joinpath(
+        sanitize_path_fragment(uploaded_file.filename),
+    )
     tune_args: dict = {
         'ocr': True, 'table_enable': True
     }
