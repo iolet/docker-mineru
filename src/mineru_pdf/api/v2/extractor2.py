@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 extractor2: Blueprint = Blueprint('extractor2', __name__)
 
 
-@extractor2.post('')
+@extractor2.post('/extract/task')
 def create():
 
     try:
@@ -178,7 +178,7 @@ def create():
     }), 200
 
 
-@extractor2.get('<string:task_id>')
+@extractor2.get('/extract/task/<string:task_id>')
 def fetch(task_id: str):
 
     task: Optional[Task] = database.session.scalars(

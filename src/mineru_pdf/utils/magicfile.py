@@ -52,6 +52,9 @@ def tune_spell(input_args: dict) -> dict:
 
 def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
 
+    if 'ocr' not in tune_args:
+        raise RuntimeError('key ocr not found, please ensure exists and try again')
+
     txt_dir = output_dir.resolve()
     if not txt_dir.exists() or txt_dir.is_file():
         raise RuntimeError(
@@ -74,10 +77,7 @@ def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
         # infer dataset
         inferred_result: InferenceResult = ds.apply(doc_analyze, **tune_args)
 
-        # pipe output
-        if 'ocr' not in tune_args:
-            raise RuntimeError('key ocr not found, please ensure exists and try again')
-
+        # pipe result
         if tune_args['ocr']:
             pipped_result: PipeResult = inferred_result.pipe_ocr_mode(
                 imageWriter=img_writer,

@@ -44,7 +44,7 @@ def create_app():
     app.register_blueprint(tasks, url_prefix='/api/v3')
 
     from .api.v2.extractor2 import extractor2
-    app.register_blueprint(extractor2, url_prefix='/api/v2/extract/task')
+    app.register_blueprint(extractor2, url_prefix='/api/v2')
 
     # register fallback handler
     from .api import handle_server_error
