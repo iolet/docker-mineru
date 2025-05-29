@@ -7,7 +7,8 @@ doclayout_yolo==0.0.3
 filename-sanitizer==0.1.0
 Flask==3.1.0
 Flask-Migrate==4.1.0
-Flask-SQLAlchemy==3.1.1
+Flask-Pydantic==0.13.*
+Flask-SQLAlchemy==3.1.*
 gunicorn==23.0.0
 magic-pdf==1.2.2
 marshmallow==3.26.1

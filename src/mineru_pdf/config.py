@@ -51,3 +51,7 @@ class Default_(object):
     @property
     def CELERY_RESULT_BACKEND_TRANSPORT_OPTIONS(self) -> Optional[str]:
         return None
+
+    @property
+    def FLASK_PYDANTIC_VALIDATION_ERROR_RAISE(self) -> bool:
+        return True
