@@ -12,9 +12,6 @@ from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 
 from .constants import Errors, Result, Status, find_http_errors
-from .exceptions import (
-    CUDANotAvailableError, GPUOutOfMemoryError, FileEncryptionFoundError
-)
 from ..models import Task
 from ..services import database
 from ..utils.fileguard import file_check
@@ -74,10 +71,11 @@ def extract_pdf(task_id: int) -> int:
 
     try:
         file_check(pdf_file)
-    except FileEncryptionFoundError as e:
+    except Exception as e:
         logger.exception(e)
         task.status = Status.TERMINATED
-        task.errors = Errors.FILE_ENCRYPTION_FOUND
+        task.errors = getattr(e, 'code', Errors.SYS_INTERNAL_ERROR)
+        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
         database.session.commit()
         return 0
 
@@ -105,20 +103,6 @@ def extract_pdf(task_id: int) -> int:
 
     try:
         magic_file(pdf_file, workdir, **fine_args)
-    except CUDANotAvailableError as e:
-        logger.exception(e)
-        task.status = Status.TERMINATED
-        task.errors = Errors.GPU_RUNTIME_ERROR
-        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
-        database.session.commit()
-        return 152
-    except GPUOutOfMemoryError as e:
-        logger.exception(e)
-        task.status = Status.TERMINATED
-        task.errors = Errors.GPU_OUT_OF_MEMORY
-        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
-        database.session.commit()
-        return 153
     except MemoryError as e:
         logger.exception(e)
         task.status = Status.TERMINATED
@@ -129,7 +113,7 @@ def extract_pdf(task_id: int) -> int:
     except Exception as e:
         logger.exception(e)
         task.status = Status.TERMINATED
-        task.errors = Errors.SYS_INTERNAL_ERROR
+        task.errors = getattr(e, 'code', Errors.SYS_INTERNAL_ERROR)
         task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
         database.session.commit()
         return 255
