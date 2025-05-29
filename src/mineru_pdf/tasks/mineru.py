@@ -12,9 +12,12 @@ from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 
 from .constants import Errors, Result, Status, find_http_errors
-from .exceptions import CUDANotAvailableError, GPUOutOfMemoryError
+from .exceptions import (
+    CUDANotAvailableError, GPUOutOfMemoryError, FileEncryptionFoundError
+)
 from ..models import Task
 from ..services import database
+from ..utils.fileguard import file_check
 from ..utils.filepath import as_semantic, create_savedir, create_workdir, create_zipfile
 from ..utils.http import calc_sha256sum, download_file, post_callback
 
@@ -60,6 +63,21 @@ def extract_pdf(task_id: int) -> int:
         logger.exception(e)
         task.status = Status.TERMINATED
         task.errors = find_http_errors(e.response.status_code)
+        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+        database.session.commit()
+        return 0
+
+    # check file
+    task.result = Result.CHECKING
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+    database.session.commit()
+
+    try:
+        file_check(pdf_file)
+    except FileEncryptionFoundError as e:
+        logger.exception(e)
+        task.status = Status.TERMINATED
+        task.errors = Errors.FILE_ENCRYPTION_FOUND
         database.session.commit()
         return 0
 
@@ -91,24 +109,28 @@ def extract_pdf(task_id: int) -> int:
         logger.exception(e)
         task.status = Status.TERMINATED
         task.errors = Errors.GPU_RUNTIME_ERROR
+        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
         database.session.commit()
         return 152
     except GPUOutOfMemoryError as e:
         logger.exception(e)
         task.status = Status.TERMINATED
         task.errors = Errors.GPU_OUT_OF_MEMORY
+        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
         database.session.commit()
         return 153
     except MemoryError as e:
         logger.exception(e)
         task.status = Status.TERMINATED
         task.errors = Errors.PYI_MEMORY_ERROR
+        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
         database.session.commit()
         return 154
     except Exception as e:
         logger.exception(e)
         task.status = Status.TERMINATED
         task.errors = Errors.SYS_INTERNAL_ERROR
+        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
         database.session.commit()
         return 255
 

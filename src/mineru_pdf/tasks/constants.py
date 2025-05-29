@@ -2,6 +2,7 @@ class Result(object):
 
     NONE_: str = 'NONE'
     COLLECTING: str = 'COLLECTING'
+    CHECKING: str = 'CHECKING'
     INFERRING: str = 'INFERRING'
     PACKING: str = 'PACKING'
     CLEANING: str = 'CLEANING'
@@ -29,6 +30,8 @@ class Errors(object):
     PYI_MEMORY_ERROR: str = 'PYI_MEMORY_ERROR'
     GPU_OUT_OF_MEMORY: str = 'GPU_OUT_OF_MEMORY'
     GPU_RUNTIME_ERROR: str = 'GPU_RUNTIME_ERROR'
+
+    FILE_ENCRYPTION_FOUND: str = 'FILE_ENCRYPTION_FOUND'
 
     SYS_INTERNAL_ERROR: str = 'SYS_INTERNAL_ERROR'
 
