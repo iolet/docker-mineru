@@ -1,4 +1,3 @@
-import logging
 import json
 import shutil
 from pathlib import Path
@@ -6,6 +5,8 @@ from typing import Optional
 
 import arrow
 from celery import shared_task
+from celery.app.task import Task as Concrete
+from celery.utils.log import get_task_logger
 from flask import current_app
 from requests.exceptions import HTTPError
 from sqlalchemy import select
@@ -18,11 +19,11 @@ from ..utils.fileguard import file_check
 from ..utils.filepath import as_semantic, create_savedir, create_workdir, create_zipfile
 from ..utils.http import calc_sha256sum, download_file, post_callback
 
-logger = logging.getLogger(__name__)
+logger = get_task_logger(__name__)
 
 
-@shared_task()
-def extract_pdf(task_id: int) -> int:
+@shared_task(bind=True, max_retries=2, retry_backoff=True)
+def extract_pdf(self: Concrete, task_id: int) -> int:
 
     # mark as start
     try:
