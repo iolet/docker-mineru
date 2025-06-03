@@ -47,28 +47,10 @@ def semantic_bool(input_: Union[str, bool, None], default: bool) -> bool:
 
     parsed = input_.strip().lower()
 
-    if 'true' == parsed:
-        return True
-
-    if 'yes' == parsed:
+    if parsed in ['true', 'yes', 'y', '1']:
          return True
 
-    if 'y' == parsed:
-         return True
-
-    if '1' == parsed:
-         return True
-
-    if 'false' == parsed:
-        return False
-
-    if 'no' == parsed:
-        return False
-
-    if 'n' == parsed:
-        return False
-
-    if '0' == parsed:
+    if parsed in ['false', 'no', 'n', '0', '']:
         return False
 
     return default
