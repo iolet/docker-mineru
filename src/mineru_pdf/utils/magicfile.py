@@ -93,6 +93,10 @@ def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
                 lang=tune_args.get('lang', None)
             )
 
+    except (MemoryError, torch.OutOfMemoryError) as e:
+
+        raise GPUOutOfMemoryError('GPU out of memory') from e
+
     except ValueError as e:
 
         pattern = r'Invalid\s+CUDA\s+\S+\s+requested.\s+Use\s+\S+\s+or\s+pass\s+valid\s+CUDA\s+device\(s\)\s+if\s+available'
@@ -101,10 +105,6 @@ def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
             raise CUDANotAvailableError('CUDA invalid, maybe a driver issues') from e
 
         raise e
-
-    except torch.OutOfMemoryError as e:
-
-        raise GPUOutOfMemoryError('GPU out of memory') from e
 
     finally:
 

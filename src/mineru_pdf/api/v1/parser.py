@@ -1,4 +1,5 @@
 import logging
+import json
 import os
 import shutil
 import signal
@@ -20,43 +21,6 @@ logger = logging.getLogger(__name__)
 
 parser: Blueprint = Blueprint('parser', __name__)
 
-
-def receive_text(text: Path) -> Optional[str]:
-    with text.open('r') as f:
-        return f.read()
-
-def locate_image(image: Path) -> str:
-    return image.name
-
-def encode_image(image: Path) -> Optional[str]:
-    with image.open('rb') as f:
-        return f'data:image/jpeg;base64,{b64encode(f.read()).decode()}'
-
-def pickup_images(image_dir: Path) -> dict:
-    return {
-        locate_image(image) : encode_image(image) for image in image_dir.glob('*.jpg')
-    }
-
-def semantic_bool(input_: Union[str, bool, None], default: bool) -> bool:
-
-    if input_ is None:
-        return False
-
-    if isinstance(input_, bool):
-        return input_
-
-    if isinstance(input_, str) and input_.isspace():
-        return False
-
-    parsed = input_.strip().lower()
-
-    if parsed in ['true', 'yes', 'y', '1']:
-         return True
-
-    if parsed in ['false', 'no', 'n', '0', '']:
-        return False
-
-    return default
 
 @parser.post('/pdf_parse')
 def pdf_parse():
@@ -112,6 +76,7 @@ def pdf_parse():
             }
         }), 500
     except Exception as e:
+        logger.exception(e)
         return jsonify({
             'error': str(e),
             'detail': {
@@ -125,17 +90,17 @@ def pdf_parse():
     }
 
     if semantic_bool(request.args.get('return_layout'), False):
-        data['layout'] = receive_text(
+        data['layout'] = receive_json(
             cache_dir.joinpath('model.json')
         )
 
     if semantic_bool(request.args.get('return_info'), False):
-        data['info'] = receive_text(
+        data['info'] = receive_json(
             cache_dir.joinpath('middle.json')
         )
 
     if semantic_bool(request.args.get('return_content_list'), False):
-        data['content_list'] = receive_text(
+        data['content_list'] = receive_json(
             cache_dir.joinpath('content_list.json')
         )
 
@@ -147,3 +112,43 @@ def pdf_parse():
     shutil.rmtree(cache_dir)
 
     return jsonify(data)
+
+def receive_json(file: Path):
+    return json.loads(receive_text(file))
+
+def receive_text(file: Path) -> Optional[str]:
+    with file.open('r') as f:
+        return f.read()
+
+def locate_image(image: Path) -> str:
+    return image.name
+
+def encode_image(image: Path) -> Optional[str]:
+    with image.open('rb') as f:
+        return f'data:image/jpeg;base64,{b64encode(f.read()).decode()}'
+
+def pickup_images(image_dir: Path) -> dict:
+    return {
+        locate_image(image) : encode_image(image) for image in image_dir.glob('*.jpg')
+    }
+
+def semantic_bool(input_: Union[str, bool, None], default: bool) -> bool:
+
+    if input_ is None:
+        return False
+
+    if isinstance(input_, bool):
+        return input_
+
+    if isinstance(input_, str) and input_.isspace():
+        return False
+
+    parsed = input_.strip().lower()
+
+    if parsed in ['true', 'yes', 'y', '1']:
+         return True
+
+    if parsed in ['false', 'no', 'n', '0', '']:
+        return False
+
+    return default
