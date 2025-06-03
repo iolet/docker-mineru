@@ -67,6 +67,7 @@ def pdf_parse():
     try:
         magic_file(input_file, cache_dir, **tune_args)
     except GPUOutOfMemoryError as e:
+        logger.warning(e, exc_info=True)
         os.kill(os.getpid(), signal.SIGTERM)
         return jsonify({
             'error': str(e),
