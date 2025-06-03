@@ -7,7 +7,7 @@
 #       export VENV_PREFIX=/var/www/mineru-pdf/venv
 #
 #   2) run envsubst command render configure file
-#       envsubst < mineru-app.service.template
+#       envsubst < mineru-app.service.template > mineru-app.service
 #
 #   3) copy (or move) render result to systemd user folder
 #       .config/systemd/user
