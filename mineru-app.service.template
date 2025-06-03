@@ -15,6 +15,13 @@
 Description=MinerU pdf to markdown convertor
 
 [Service]
+Environment=PYTHONUNBUFFERED=1
+# if you have issue like unable to load any of libcudnn.so.*,
+# you can comment out following line to address
+#Environment=LD_LIBRARY_PATH=${VENV_PREFIX}/lib/python3.10/site-packages/nvidia/cudnn/lib
+# if you have multiple gpu, and does not want to use default (gpu 0), please
+# try comment out following line to use specified gpu (start from zero)
+#Environment=CUDA_VISIBLE_DEVICES=0
 WorkingDirectory=${APP_WORKDIR}
 ExecStart=${VENV_PREFIX}/bin/gunicorn
 Restart=always
