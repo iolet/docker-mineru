@@ -1,5 +1,7 @@
 import logging
+import os
 import shutil
+import signal
 from base64 import b64encode
 from pathlib import Path
 from tempfile import mkdtemp
@@ -11,6 +13,7 @@ from filename_sanitizer import sanitize_path_fragment
 from werkzeug.datastructures import FileStorage
 
 from ...tasks.constants import Errors
+from ...tasks.exceptions import GPUOutOfMemoryError
 from ...utils.fileguard import file_check
 
 logger = logging.getLogger(__name__)
@@ -99,6 +102,15 @@ def pdf_parse():
 
     try:
         magic_file(input_file, cache_dir, **tune_args)
+    except GPUOutOfMemoryError as e:
+        os.kill(os.getpid(), signal.SIGTERM)
+        return jsonify({
+            'error': str(e),
+            'detail': {
+                'code': Errors.GPU_OUT_OF_MEMORY,
+                'message': f'{e}'
+            }
+        }), 500
     except Exception as e:
         return jsonify({
             'error': str(e),

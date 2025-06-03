@@ -23,6 +23,9 @@ class Default_(object):
     def SECRET_KEY(self) -> Optional[str]:
         return None
 
+    @property
+    def MAX_CONTENT_LENGTH(self) -> int:
+        return 200 * 1024 * 1024
 
     ###
     ### Flask SQLAlchemy
