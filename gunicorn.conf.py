@@ -8,7 +8,7 @@ wsgi_app = 'src.mineru_pdf:create_app()'
 bind = ['0.0.0.0:8889']
 
 # worker process
-workers = 8
+workers = 4
 
 # maximum number of requests a worker will process before restarting
 max_requests = 400
