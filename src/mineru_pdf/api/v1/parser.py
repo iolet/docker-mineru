@@ -15,7 +15,7 @@ from werkzeug.datastructures import FileStorage
 
 from ...tasks.constants import Errors
 from ...tasks.exceptions import GPUOutOfMemoryError
-from ...utils.fileguard import file_check
+from ...utils.fileguard import file_check, img2pdf, doc2pdf
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,15 @@ def pdf_parse():
     uploaded_file.save(input_file)
 
     try:
+
+        if input_file.suffix in [ '.png', '.jpg', '.jpeg', ]:
+            input_file = img2pdf(input_file)
+
+        if input_file.suffix in [ '.docx', '.pptx', '.doc', '.ppt', ]:
+            input_file = doc2pdf(input_file)
+
         file_check(input_file)
+
     except Exception as e:
         return jsonify({
             'error': str(e),

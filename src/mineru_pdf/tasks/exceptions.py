@@ -34,3 +34,11 @@ class FilePageRatioInvalidError(ValueError):
 
     def __str__(self):
         return f'{self.code}: {super().__str__()}'
+
+class FileMIMEUnsupportedError(ValueError):
+    """File MIME type unsupported"""
+
+    code = Errors.FILE_MIME_UNSUPPORTED
+
+    def __str__(self):
+        return f'{self.code}: {super().__str__()}'
