@@ -20,7 +20,7 @@ def img2pdf(input_file: Path) -> Path:
     if ext not in [ 'png', 'jpg', 'jpeg', ]:
         raise FileMIMEUnsupportedError(
             f'unsupported convert {input_file.name} to'
-            f'{input_file.with_suffix('.pdf').name}'
+            f'{input_file.with_suffix(".pdf").name}'
         )
 
     origin = fitz.open(str(input_file))
@@ -44,7 +44,7 @@ def doc2pdf(input_file: Path):
     if ext not in [ 'ppt', 'pptx', 'doc', 'docx' ]:
         raise FileMIMEUnsupportedError(
             f'unsupported {input_file.name} to'
-            f'{input_file.with_suffix('.pdf').name}'
+            f'{input_file.with_suffix(".pdf").name}'
         )
 
     output = input_file.with_suffix('.pdf').resolve()

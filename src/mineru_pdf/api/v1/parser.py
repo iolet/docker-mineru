@@ -26,24 +26,20 @@ parser: Blueprint = Blueprint('parser', __name__)
 @parser.post('/file_parse')
 def pdf_parse():
 
-    if 'pdf_file' not in request.files and 'file' not in request.files:
+    if 'pdf_file' in request.files:
+        uploaded_file: FileStorage = request.files['pdf_file']
+    elif 'file' in request.files:
+        uploaded_file: FileStorage = request.files['file']
+    else:
         return jsonify({
             'error': 'pdf_file and file are missing'
         }), 400
 
-    if '' != request.files['pdf_file'].filename:
-        file_key = 'pdf_file'
-    elif '' != request.files['file'].filename:
-        file_key = 'file'
-    else:
-        file_key = None;
-
-    if file_key is None:
+    if '' == uploaded_file.filename:
         return jsonify({
-            'error': 'pdf_file or file are not found'
+            'error': 'pdf_file and file are not found, make sure it selected'
         }), 400
 
-    uploaded_file: FileStorage = request.files[file_key]
     timestamp: int = arrow.now(current_app.config.get('TIMEZONE')).int_timestamp
 
     cache_dir: Path = Path(mkdtemp(prefix=f'{timestamp}.', dir=str(
