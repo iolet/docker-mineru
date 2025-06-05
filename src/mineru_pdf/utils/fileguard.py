@@ -47,12 +47,13 @@ def doc2pdf(input_file: Path):
             f'{input_file.with_suffix(".pdf").name}'
         )
 
-    output = input_file.with_suffix('.pdf').resolve()
+    output = input_file.resolve().with_suffix('.pdf')
     process = subprocess.run([
         'soffice', '--headless',
         '--convert-to', 'pdf',
-        '--outdir', str(output.parent)
-    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        '--outdir', output.parent,
+        input_file.resolve()
+    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
 
     if 0 != process.returncode:
         raise ValueError(
