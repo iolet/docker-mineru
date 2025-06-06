@@ -9,7 +9,7 @@ from tempfile import mkdtemp
 from typing import Optional, Union
 
 import arrow
-from flask import Blueprint, current_app, request, jsonify
+from flask import Blueprint, current_app, jsonify, render_template_string, request
 from filename_sanitizer import sanitize_path_fragment
 from werkzeug.datastructures import FileStorage
 
@@ -21,6 +21,35 @@ logger = logging.getLogger(__name__)
 
 parser: Blueprint = Blueprint('parser', __name__)
 
+
+@parser.get('/docs')
+def fake_docs():
+    moment = arrow.now().format(arrow.FORMAT_RFC3339)
+    return render_template_string('''
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>mineru fake docs</title>
+        <style>
+          body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+          }
+        </style>
+      </head>
+      <body>
+        <div><h2>FAKE DOCS</h2></div>
+        <div>{{ moment }}</div>
+      </body>
+    </html>
+    ''', moment=moment)
 
 @parser.post('/pdf_parse')
 @parser.post('/file_parse')
