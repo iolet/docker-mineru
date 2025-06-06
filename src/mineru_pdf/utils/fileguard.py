@@ -95,9 +95,9 @@ def file_check(input_file: Path) -> None:
 
         ratio = longer / shorter
 
-        if ratio > 1.78:
+        if ratio > 3.1415926:
             raise FilePageRatioInvalidError(
-                'unsupported page size, A and B series, plus US Letter only',
+                f'unsupported page ratio {ratio}, it greater then threshold',
             )
 
     finally:

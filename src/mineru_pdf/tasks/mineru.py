@@ -104,13 +104,6 @@ def extract_pdf(self: Concrete, task_id: int) -> int:
 
     try:
         magic_file(pdf_file, workdir, **fine_args)
-    except MemoryError as e:
-        logger.exception(e)
-        task.status = Status.TERMINATED
-        task.errors = Errors.PYI_MEMORY_ERROR
-        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
-        database.session.commit()
-        return 154
     except Exception as e:
         logger.exception(e)
         task.status = Status.TERMINATED
