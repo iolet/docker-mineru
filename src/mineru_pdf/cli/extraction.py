@@ -27,7 +27,7 @@ def extract(input_file, output_dir, table, formula):
     if not 'magic_file' in globals():
         from ..utils.magicfile import magic_file
 
-    magic_file(src_file, dest_path, formula_enable=formula, table_enable=table)
+    magic_file(src_file, dest_path, formula_enable=formula, table_enable=table, ocr=True)
 
     click.echo(f'output to {dest_path}.')
 

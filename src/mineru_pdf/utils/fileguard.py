@@ -1,8 +1,11 @@
+import os
 import subprocess
 from pathlib import Path
+from typing import Union
 
 import filetype
 import fitz
+from magic_pdf.data.data_reader_writer.filebase import FileBasedDataWriter
 
 from ..tasks.exceptions import (
     FileEncryptionFoundError, FileMIMEUnsupportedError,
@@ -104,3 +107,40 @@ def file_check(input_file: Path) -> None:
         if getattr(document, 'is_closed', False):
             document.close()
         del document
+
+class ImgWriter(FileBasedDataWriter):
+    """Write image data to file"""
+
+    def __init__(self, parent_dir: Union[Path, str] = '') -> None:
+        """Initialized with parent_dir.
+
+        Args:
+            parent_dir (str, optional): the parent directory that may be used within methods. Defaults to ''.
+        """
+        super().__init__(str(parent_dir))
+
+class TxtWriter(FileBasedDataWriter):
+    """Write txt data to file and replace path inside"""
+
+    def __init__(self, parent_dir: Union[Path, str] = '') -> None:
+        """Initialized with parent_dir.
+
+        Args:
+            parent_dir (str, optional): the parent directory that may be used within methods. Defaults to ''.
+        """
+        super().__init__(str(parent_dir))
+
+    def write_string(self, file: str, data: str) -> None:
+        """Write the data to file, the data will be encoded to bytes.
+
+        Args:
+            path (Path | str): the target file where to write
+            data (str): the data want to write
+        """
+
+        savedir: Path = Path(self._parent_dir)
+
+        if savedir.is_absolute():
+            data = data.replace(str(savedir) + os.sep, '')
+
+        super().write_string(file, data)

@@ -4,12 +4,13 @@ from pathlib import Path
 from re import search as re_search
 
 import torch
-from magic_pdf.data.data_reader_writer import FileBasedDataReader, FileBasedDataWriter
+from magic_pdf.data.data_reader_writer import FileBasedDataReader
 from magic_pdf.data.dataset import PymuDocDataset
 from magic_pdf.model.doc_analyze_by_custom_model import doc_analyze
 from magic_pdf.operators.models import InferenceResult
 from magic_pdf.operators.pipes import PipeResult
 
+from .fileguard import ImgWriter, TxtWriter
 from ..tasks.exceptions import CUDANotAvailableError, GPUOutOfMemoryError
 
 
@@ -65,8 +66,8 @@ def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
     if not img_dir.exists():
         img_dir.mkdir()
 
-    img_writer = FileBasedDataWriter(str(img_dir))
-    txt_writer = FileBasedDataWriter(str(txt_dir))
+    img_writer = ImgWriter(img_dir)
+    txt_writer = TxtWriter(txt_dir)
 
     ds: PymuDocDataset = PymuDocDataset(
         FileBasedDataReader().read(str(input_file))
