@@ -13,6 +13,7 @@ from werkzeug.exceptions import BadRequest, UnsupportedMediaType
 from ...models import Task, database
 from ...tasks.constants import Errors, Result, Status
 from ...tasks.mineru import extract_pdf
+from ...utils.casts import as_bool_or_throw
 from ...utils.presenters import TaskSchema
 
 logger = logging.getLogger(__name__)
@@ -52,46 +53,40 @@ def create():
             },
         }, 422
 
-    apply_ocr: Union[bool, str] = payload.get('apply_ocr', True)
-    if apply_ocr in ['yes', 'true', True]:
-        apply_ocr: bool = True
-    elif apply_ocr in ['no', 'false', False]:
-        apply_ocr: bool = False
-    else:
+    try:
+        apply_ocr_raw = payload.get('apply_ocr', None)
+        apply_ocr: bool = as_bool_or_throw(apply_ocr_raw)
+    except ValueError:
         return {
             'error': {
                 'code': 'UnsupportedValue',
-                'message': f'unknown value {apply_ocr},'
+                'message': f'unknown value {apply_ocr_raw},'
                            f'only support bool (true, false) or string (true false yes and no)',
                 'target': 'apply_ocr'
             }
         }, 422
 
-    enable_table: Union[bool, str] = payload.get('enable_table', False)
-    if enable_table in ['yes', 'true', True]:
-        enable_table: bool = True
-    elif enable_table in ['no', 'false', False]:
-        enable_table: bool = False
-    else:
+    try:
+        enable_table_raw = payload.get('enable_table', False)
+        enable_table: bool = as_bool_or_throw(enable_table_raw)
+    except ValueError:
         return {
             'error': {
                 'code': 'UnsupportedValue',
-                'message': f'unknown value {enable_table},'
+                'message': f'unknown value {enable_table_raw},'
                            f'only support bool (true, false) or string (true false yes and no)',
                 'target': 'enable_table'
             }
         }, 422
 
-    enable_formula: Union[bool, str] = payload.get('enable_formula', False)
-    if enable_formula in ['yes', 'true', True]:
-        enable_formula: bool = True
-    elif enable_formula in ['no', 'false', False]:
-        enable_formula: bool = False
-    else:
+    try:
+        enable_formula_raw = payload.get('enable_formula', False)
+        enable_formula: bool = as_bool_or_throw(enable_formula_raw)
+    except ValueError:
         return {
             'error': {
                 'code': 'UnsupportedValue',
-                'message': f'unknown value {enable_formula},'
+                'message': f'unknown value {enable_formula_raw},'
                            f'only support bool (true, false) or string (true false yes and no)',
                 'target': 'enable_formula'
             }

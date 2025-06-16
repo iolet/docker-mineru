@@ -15,6 +15,7 @@ from werkzeug.datastructures import FileStorage
 
 from ...tasks.constants import Errors
 from ...tasks.exceptions import GPUOutOfMemoryError
+from ...utils.casts import as_bool_or_default
 from ...utils.fileguard import file_check, img2pdf, doc2pdf
 
 logger = logging.getLogger(__name__)
@@ -69,6 +70,12 @@ def pdf_parse():
             'error': 'pdf_file and file are not found, make sure it selected'
         }), 400
 
+    tune_args: dict = {
+        'ocr': as_bool_or_default(request.args.get('apply_ocr', None)),
+        'table_enable': as_bool_or_default(request.args.get('enable_table', True)),
+        'formula_enable': as_bool_or_default(request.args.get('enable_formula', False)),
+    }
+
     timestamp: int = arrow.now(current_app.config.get('TIMEZONE')).int_timestamp
 
     cache_dir: Path = Path(mkdtemp(prefix=f'{timestamp}.', dir=str(
@@ -77,9 +84,6 @@ def pdf_parse():
     input_file: Path = cache_dir.joinpath(
         sanitize_path_fragment(uploaded_file.filename),
     )
-    tune_args: dict = {
-        'ocr': True, 'table_enable': True
-    }
 
     uploaded_file.save(input_file)
 
@@ -131,22 +135,22 @@ def pdf_parse():
         'md_content': receive_text(cache_dir.joinpath('content.md'))
     }
 
-    if semantic_bool(request.args.get('return_layout'), False):
+    if as_bool_or_default(request.args.get('return_layout'), False):
         data['layout'] = receive_json(
             cache_dir.joinpath('model.json')
         )
 
-    if semantic_bool(request.args.get('return_info'), False):
+    if as_bool_or_default(request.args.get('return_info'), False):
         data['info'] = receive_json(
             cache_dir.joinpath('middle.json')
         )
 
-    if semantic_bool(request.args.get('return_content_list'), False):
+    if as_bool_or_default(request.args.get('return_content_list'), False):
         data['content_list'] = receive_json(
             cache_dir.joinpath('content_list.json')
         )
 
-    if semantic_bool(request.args.get('return_images'), False):
+    if as_bool_or_default(request.args.get('return_images'), False):
         data['images'] = pickup_images(
             cache_dir.joinpath('images')
         )
@@ -173,24 +177,3 @@ def pickup_images(image_dir: Path) -> dict:
     return {
         locate_image(image) : encode_image(image) for image in image_dir.glob('*.jpg')
     }
-
-def semantic_bool(input_: Union[str, bool, None], default: bool) -> bool:
-
-    if input_ is None:
-        return False
-
-    if isinstance(input_, bool):
-        return input_
-
-    if isinstance(input_, str) and input_.isspace():
-        return False
-
-    parsed = input_.strip().lower()
-
-    if parsed in ['true', 'yes', 'y', '1']:
-         return True
-
-    if parsed in ['false', 'no', 'n', '0', '']:
-        return False
-
-    return default

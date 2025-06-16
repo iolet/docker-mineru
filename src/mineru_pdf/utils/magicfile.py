@@ -4,6 +4,7 @@ from pathlib import Path
 from re import search as re_search
 
 import torch
+from magic_pdf.config.enums import SupportedPdfParseMethod
 from magic_pdf.data.data_reader_writer import FileBasedDataReader
 from magic_pdf.data.dataset import PymuDocDataset
 from magic_pdf.model.doc_analyze_by_custom_model import doc_analyze
@@ -18,9 +19,11 @@ logger = logging.getLogger(__name__)
 
 def tune_spell(input_args: dict) -> dict:
 
-    input_args.setdefault('apply_ocr', True)
-    if not isinstance(input_args['apply_ocr'], bool):
-        input_args['apply_ocr'] = True
+    input_args.setdefault('apply_ocr', None)
+    if input_args['apply_ocr'] not in [ None, True, False ]:
+        raise RuntimeError(
+            'invalid type for enable_formula, only supported True, False and None'
+        )
 
     input_args.setdefault('target_language', None)
     if input_args['target_language'] not in [ None, 'ch', 'en' ]:
@@ -53,9 +56,6 @@ def tune_spell(input_args: dict) -> dict:
 
 def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
 
-    if 'ocr' not in tune_args:
-        raise RuntimeError('key ocr not found, please ensure exists and try again')
-
     txt_dir = output_dir.resolve()
     if not txt_dir.exists() or txt_dir.is_file():
         raise RuntimeError(
@@ -72,6 +72,9 @@ def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
     ds: PymuDocDataset = PymuDocDataset(
         FileBasedDataReader().read(str(input_file))
     )
+
+    if tune_args['ocr'] is None:
+        tune_args['ocr'] = ds.classify() == SupportedPdfParseMethod.OCR
 
     try:
 
