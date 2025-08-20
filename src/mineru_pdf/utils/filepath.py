@@ -2,7 +2,6 @@ import logging
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import arrow
 from dateutil import tz
@@ -19,15 +18,15 @@ def as_semantic(task: Task) -> str:
         raise RuntimeError('started_at does not exists or empty')
 
     moment: str = arrow.get(
-        task.started_at, tz.gettz(current_app.config.get('TIMEZONE'))
-    )
+        task.started_at, tz.gettz(current_app.config.get('TIMEZONE')) # type: ignore
+    ) # type: ignore
 
     return '_'.join([
         f'taskid.{task.uuid}',
         f'moment.{moment.format("YYYYMMDDHHmm")}'
     ])
 
-def create_savedir(moment: Optional[arrow.Arrow] = None) -> Path:
+def create_savedir(moment: arrow.Arrow) -> Path:
 
     save_dir: Path = Path(
         current_app.instance_path

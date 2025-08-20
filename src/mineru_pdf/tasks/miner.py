@@ -39,8 +39,8 @@ def extract_pdf(self: Concrete, task_id: int) -> int:
     task.status = Status.RUNNING
     task.result = Result.NONE_
     task.errors = Errors.NONE_
-    task.started_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
-    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+    task.started_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
     # prepare workdir
@@ -50,7 +50,7 @@ def extract_pdf(self: Concrete, task_id: int) -> int:
 
     # download file
     task.result = Result.COLLECTING
-    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
     try:
@@ -61,13 +61,13 @@ def extract_pdf(self: Concrete, task_id: int) -> int:
         logger.exception(e)
         task.status = Status.TERMINATED
         task.errors = find_http_errors(e.response.status_code)
-        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
         database.session.commit()
         return 0
 
     # check file
     task.result = Result.CHECKING
-    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
     try:
@@ -76,20 +76,20 @@ def extract_pdf(self: Concrete, task_id: int) -> int:
         logger.exception(e)
         task.status = Status.TERMINATED
         task.errors = getattr(e, 'code', Errors.SYS_INTERNAL_ERROR)
-        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
         database.session.commit()
         return 0
 
     # infect content
     task.result = Result.INFERRING
-    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
     if not 'tune_spell' in globals():
         from ..utils.magicfile import tune_spell
 
     try:
-        fine_args = tune_spell(
+        fine_args = tune_spell( # type: ignore
             json.loads(task.finetune_args)
         )
     except json.decoder.JSONDecodeError as e1:
@@ -103,18 +103,18 @@ def extract_pdf(self: Concrete, task_id: int) -> int:
         from ..utils.magicfile import magic_file
 
     try:
-        magic_file(pdf_file, workdir, **fine_args)
+        magic_file(pdf_file, workdir, **fine_args) # type: ignore
     except Exception as e:
         logger.exception(e)
         task.status = Status.TERMINATED
         task.errors = getattr(e, 'code', Errors.SYS_INTERNAL_ERROR)
-        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+        task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
         database.session.commit()
         return 255
 
     # packing result
     task.result = Result.PACKING
-    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
     moment = arrow.now(current_app.config.get('TIMEZONE'))
@@ -128,7 +128,7 @@ def extract_pdf(self: Concrete, task_id: int) -> int:
 
     # clean workarea
     task.result = Result.CLEANING
-    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
     if tarball.exists():
@@ -137,8 +137,8 @@ def extract_pdf(self: Concrete, task_id: int) -> int:
     # mark as completed
     task.status = Status.COMPLETED
     task.result = Result.FINISHED
-    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
-    task.finished_at = arrow.now(current_app.config.get('TIMEZONE')).datetime
+    task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
+    task.finished_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
     # post callback

@@ -29,7 +29,7 @@ def create_app():
     database.init_app(app)
     migrate.init_app(
         app, db=database,
-        directory=Path(app.root_path).joinpath('migrations'),
+        directory=Path(app.root_path).joinpath('migrations'), # type: ignore
         render_as_batch=True
     )
 
@@ -40,18 +40,12 @@ def create_app():
     app.cli.add_command(storage)
 
     # register blueprint
-    from .api.v3.tasks import tasks
-    app.register_blueprint(tasks, url_prefix='/api/v3')
-
-    from .api.v2.extractor2 import extractor2
-    app.register_blueprint(extractor2, url_prefix='/api/v2')
-
-    from .api.v1.parser import parser
-    app.register_blueprint(parser)
+    from .api.v4.tasks import tasks
+    app.register_blueprint(tasks, url_prefix='/api/v4')
 
     # register fallback handler
     from .api import handle_server_error
-    app.register_error_handler(Exception, handle_server_error)
+    app.register_error_handler(Exception, handle_server_error) # type: ignore
 
     # integrate celery with flask
     from .utils.integrators import integrate_celery

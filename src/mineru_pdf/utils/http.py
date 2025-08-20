@@ -50,7 +50,7 @@ def post_callback(task: Task) -> None:
         return
 
     host: str = current_app.config['APP_URL']
-    data: dict = TaskSchema().dump(task)
+    data: dict = TaskSchema().dump(task) # type: ignore
 
     if 'tarball' in data:
         if 'location' in data['tarball']:

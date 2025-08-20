@@ -12,7 +12,7 @@ from sqlalchemy import select
 from ...models import Task, database
 from ...requests import TaskRequest
 from ...tasks.constants import Errors, Result, Status
-from ...tasks.mineru import extract_pdf
+from ...tasks.miner import extract_pdf
 from ...utils.presenters import TaskSchema
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ def create(body: TaskRequest):
     database.session.commit()
 
     # delivery to queue
-    extract_pdf.delay(task.id)
+    extract_pdf.delay(task.id) # type: ignore
 
     return jsonify({
         'data': {
@@ -75,7 +75,7 @@ def fetch(task_id: str):
         }), 404
 
     host: str = request.host_url
-    data: dict = TaskSchema().dump(task)
+    data: dict = TaskSchema().dump(task) # type: ignore
 
     if 'tarball' in data:
         if 'location' in data['tarball']:
@@ -88,7 +88,7 @@ def fetch(task_id: str):
 @tasks.errorhandler(ValidationError)
 def validate_failed(e: ValidationError):
 
-    messages = { field['loc'][0]: field['msg'] for field in e.body_params }
+    messages = { field['loc'][0]: field['msg'] for field in e.body_params } # type: ignore
 
     return jsonify({
         'error': {
