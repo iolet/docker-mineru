@@ -1,15 +1,14 @@
 import json
 import logging
+import os
 from pathlib import Path
 from re import search as re_search
+from typing import Dict, Union
 
 import torch
-from magic_pdf.config.enums import SupportedPdfParseMethod
-from magic_pdf.data.data_reader_writer import FileBasedDataReader
-from magic_pdf.data.dataset import PymuDocDataset
-from magic_pdf.model.doc_analyze_by_custom_model import doc_analyze
-from magic_pdf.operators.models import InferenceResult
-from magic_pdf.operators.pipes import PipeResult
+from mineru.data.data_reader_writer import FileBasedDataReader
+from mineru.backend.pipeline.pipeline_analyze import doc_analyze as pipe_doc_analyze
+from mineru.backend.vlm.vlm_analyze import doc_analyze as vlm_doc_analyze
 
 from .fileguard import ImgWriter, TxtWriter
 from ..tasks.exceptions import CUDANotAvailableError, GPUOutOfMemoryError
@@ -19,42 +18,76 @@ logger = logging.getLogger(__name__)
 
 def tune_spell(input_args: dict) -> dict:
 
-    input_args.setdefault('apply_ocr', None)
-    if input_args['apply_ocr'] not in [ None, True, False ]:
+    input_args.setdefault('model_type', 'pipe')
+    if input_args['model_type'] not in [ 'pipe', 'vlm' ]:
         raise RuntimeError(
-            'invalid type for enable_formula, only supported True, False and None'
+            f'unknown model_type {input_args["model_type"]},'
+            f'supported value are pipe (default) and vlm'
         )
 
-    input_args.setdefault('target_language', None)
-    if input_args['target_language'] not in [ None, 'ch', 'en' ]:
-        raise RuntimeError(
-            f'unknown target_language {input_args["target_language"]},'
-            f'supported value are ch (chinese) and en (english)'
-        )
+    result_args: dict = {}
 
-    input_args.setdefault('enable_formula', None)
-    if not isinstance(input_args['enable_formula'], (bool, None)):
-        raise RuntimeError(
-            'invalid type for enable_formula, only supported True, False and None'
-        )
+    if 'pipe' == input_args['model_type']:
 
-    input_args.setdefault('enable_table', None)
-    if not isinstance(input_args['enable_table'], (bool, None)):
-        raise RuntimeError(
-            'invalid type for enable_table, only supported True, False and None'
-        )
+        input_args.setdefault('parse_prefer', 'auto')
+        if input_args['parse_prefer'] not in [ 'auto', 'ocr', 'txt' ]:
+            raise RuntimeError(
+                f'unknown parse_prefer {input_args["parse_prefer"]},'
+                f'supported value are auto (default), ocr (for many picture)'
+                f'and txt (text only)'
+            )
+        result_args['parse_method'] = input_args['parse_prefer']
 
-    return {
-        'ocr': input_args['apply_ocr'],
-        'lang': input_args['target_language'],
-        'formula_enable': input_args['enable_formula'],
-        'table_enable': input_args['enable_table'],
-        # TODO layout model name depended by outside config,
-        #      current disabled because unable checking
-        'layout_model': None
-    }
+        input_args.setdefault('target_language', 'ch')
+        if input_args['target_language'] not in [ 'ch', 'en' ]:
+            raise RuntimeError(
+                f'unknown target_language {input_args["target_language"]},'
+                f'supported value are ch (chinese) and en (english)'
+            )
+        result_args['lang_list'] = [ input_args['target_language'] ]
 
-def magic_file(input_file: Path, output_dir: Path,  **tune_args: dict) -> None:
+        input_args.setdefault('enable_formula', False)
+        if not isinstance(input_args['enable_formula'], bool):
+            raise RuntimeError(
+                'invalid type for enable_formula, only supported True and False'
+            )
+        result_args['formula_enable'] = input_args['enable_formula']
+
+        input_args.setdefault('enable_table', True)
+        if not isinstance(input_args['enable_table'], bool):
+            raise RuntimeError(
+                'invalid type for enable_table, only supported True and False'
+            )
+        result_args['table_enable'] = input_args['enable_table']
+
+    if 'vlm' == input_args['model_type']:
+
+        input_args.setdefault('backend_handler', 'transformers')
+        if input_args['backend_handler'] not in [ 'transformers', 'sglang-client', ]:
+            raise RuntimeError(
+                f'unknown backend_handler {input_args["backend_handler"]},'
+                f'supported value are transformers (default), sglang-client'
+                f'and sglang-engine'
+            )
+        result_args['backend'] = input_args['backend_handler']
+
+        input_args.setdefault('enable_formula', False)
+        if not isinstance(input_args['enable_formula'], bool):
+            raise RuntimeError(
+                'invalid type for enable_formula, only supported True and False'
+            )
+        os.environ['MINERU_VLM_FORMULA_ENABLE'] = str(input_args['enable_formula'])
+
+        input_args.setdefault('enable_table', True)
+        if not isinstance(input_args['enable_table'], bool):
+            raise RuntimeError(
+                'invalid type for enable_table, only supported True and False'
+            )
+        os.environ['MINERU_VLM_TABLE_ENABLE'] = str(input_args['enable_table'])
+
+    return result_args
+
+def magic_file(input_file: Path, output_dir: Path,  **tune_args: Dict[str, Union[str, bool, None]]) -> None:
 
     txt_dir = output_dir.resolve()
     if not txt_dir.exists() or txt_dir.is_file():
