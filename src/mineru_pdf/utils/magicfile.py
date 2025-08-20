@@ -16,7 +16,7 @@ from ..tasks.exceptions import CUDANotAvailableError, GPUOutOfMemoryError
 
 logger = logging.getLogger(__name__)
 
-def tune_spell(input_args: dict) -> dict:
+def magic_args(input_args: dict) -> dict:
 
     input_args.setdefault('model_type', 'pipe')
     if input_args['model_type'] not in [ 'pipe', 'vlm' ]:

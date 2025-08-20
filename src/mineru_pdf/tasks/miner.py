@@ -85,11 +85,11 @@ def extract_pdf(self: Concrete, task_id: int) -> int:
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
-    if not 'tune_spell' in globals():
-        from ..utils.magicfile import tune_spell
+    if not 'magic_args' in globals():
+        from ..utils.magicfile import magic_args
 
     try:
-        fine_args = tune_spell( # type: ignore
+        fine_args = magic_args( # type: ignore
             json.loads(task.finetune_args)
         )
     except json.decoder.JSONDecodeError as e1:
