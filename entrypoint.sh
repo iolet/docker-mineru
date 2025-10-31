@@ -8,4 +8,12 @@ for item in "archives cache logs public"; do
     fi
 done
 
+# Migrate database
+. .venv/bin/activate
+flask db upgrade
+deactivate
+
+# Clean variables
+unset prefix
+
 exec gosu mineru "$@"

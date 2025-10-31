@@ -57,7 +57,13 @@ class Default_(object):
 
     @property
     def DB_DATABASE(self) -> Optional[str]:
-        return self.env_pair.get('DB_DATABASE')
+
+        db = self.env_pair.get('DB_DATABASE')
+
+        if not db and 'sqlite' in self.DB_DRIVER:
+            return 'db.sqlite3'
+
+        return db
 
     @property
     def DB_USERNAME(self) -> Optional[str]:
