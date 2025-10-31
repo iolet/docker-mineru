@@ -18,18 +18,19 @@ def create_app():
     from .config import Default_
     app.config.from_object(Default_(app.instance_path))
 
-    from dotenv import dotenv_values
     from pathlib import Path
-    env_file = Path('.').resolve().joinpath('.env')
+    env_file = Path.cwd().joinpath('.env')
     if env_file.exists() and env_file.is_file():
-        app.config.from_mapping(dotenv_values(env_file))
+        app.config.from_object(Default_(app.instance_path, env_file))
+    else:
+        app.config.from_prefixed_env('MINERU')
 
     # init essential components
     from .services import database, migrate
     database.init_app(app)
     migrate.init_app(
         app, db=database,
-        directory=Path(app.root_path).joinpath('migrations'),
+        directory=str(Path(app.root_path).joinpath('migrations')),
         render_as_batch=True
     )
 

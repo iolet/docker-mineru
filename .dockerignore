@@ -33,7 +33,13 @@ venv/
 /_version.py
 
 # Other files
-instance/*.db
-instance/*.sqlite
+instance/
+*.template
 *.http
 *.log
+conf.py
+LICENSE
+Makefile
+pyproject.toml
+README.rst
+requirements-dev.txt
