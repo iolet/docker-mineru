@@ -2,7 +2,8 @@
 
 # Ensure instance folders exists
 prefix="/app/instance"
-for item in "archives cache logs public"; do
+subdirs="archives cache logs public"
+for item in $subdirs; do
     if [ ! -d "${prefix}/${item}" ]; then
         mkdir -p "${prefix}/${item}"
     fi
