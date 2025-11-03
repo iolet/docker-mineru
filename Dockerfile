@@ -73,7 +73,7 @@ RUN set -eux; \
     fi; \
     \
     pip3 install \
-        "wheel~=0.45.1"
+        "wheel~=0.45.1" \
         --no-cache-dir \
         --no-color \
         --disable-pip-version-check; \
