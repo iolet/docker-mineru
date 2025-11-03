@@ -18,7 +18,6 @@ RUN set -eux; \
     apt dist-upgrade -y; \
     apt install \
         python3 python3-venv \
-        cuda-nvcc-12-4 libcusparse-12-4 libcublas-12-4 libcusolver-12-4 \
         curl tree jq \
         -y; \
     apt clean && rm -rf /var/lib/apt/lists/*; \
@@ -32,10 +31,10 @@ RUN set -eux; \
     \
     cd \tmp; \
     \
-    curl --progress-bar --location --output gosu https://github.com/tianon/gosu/releases/download/1.19/gosu-amd64; \
-    curl --progress-bar --location --output gosu.sha256sums https://github.com/tianon/gosu/releases/download/1.19/SHA256SUMS; \
-    sha256sum --check --strict --ignore-missing gosu.sha256sums; \
-    cp gosu /usr/local/bin/; \
+    curl --progress-bar --location --remote-name https://github.com/tianon/gosu/releases/download/1.19/gosu-amd64; \
+    curl --progress-bar --location --remote-name https://github.com/tianon/gosu/releases/download/1.19/SHA256SUMS; \
+    sha256sum --check --strict --ignore-missing SHA256SUMS; \
+    cp gosu-amd64 /usr/local/bin/gosu; \
     chmod +x /usr/local/bin/gosu; \
     \
     rm -rf \tmp\*;
@@ -73,13 +72,16 @@ RUN set -eux; \
     fi; \
     \
     pip3 install \
-        --requirement requirement.txt \
+        --requirement requirements.txt \
         --no-cache-dir \
         --no-color \
         --disable-pip-version-check; \
     \
     if [ -d ~/.config/pip ]; then \
         rm -rf ~/.config/pip; \
+    fi; \
+    if [ -d ~/.cache/pip ]; then \
+        rm -rf ~/.cache/pip; \
     fi; \
     chown -R mineru:mineru .venv;
 
