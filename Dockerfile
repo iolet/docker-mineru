@@ -20,7 +20,7 @@ RUN set -eux; \
     apt update -y; \
     apt install \
         python3 python3-venv \
-        curl envsubst tree jq \
+        curl gettext-base tree jq \
         -y; \
     apt clean && rm -rf /var/lib/apt/lists/*; \
     \
