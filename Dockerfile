@@ -15,7 +15,6 @@ RUN set -eux; \
     export DEBIAN_FRONTEND=noninteractive; \
     \
     apt update -y; \
-    apt dist-upgrade -y; \
     apt install \
         python3 python3-venv \
         curl tree jq \
@@ -52,7 +51,6 @@ RUN set -eux; \
 
 # Copy project files
 COPY src/ /app/
-COPY entrypoint.sh /usr/local/bin/
 COPY .env.example .flaskenv gunicorn.conf.py requirements.txt /app/
 
 # Install dependent packages
@@ -84,6 +82,9 @@ RUN set -eux; \
         rm -rf ~/.cache/pip; \
     fi; \
     chown -R mineru:mineru .venv;
+
+# Added entrypoint.sh
+COPY entrypoint.sh /usr/local/bin/
 
 WORKDIR /app
 
