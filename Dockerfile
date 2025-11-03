@@ -5,6 +5,9 @@ ARG APT_SECURITY=http://security.ubuntu.com
 ARG PIP_INDEX=https://pypi.org
 ARG PIP_EXTRA=https://pypi.example.com
 
+ENV MODEL_PDFEXTRACTKIT_PATH=/app/models/opendatalab--PDF-Extract-Kit-1.0
+ENV MODEL_LAYOUTREADER_PATH=/app/models/ppaanngggg--layoutreader
+
 # Install required packages
 RUN set -eux; \
     \
@@ -17,7 +20,7 @@ RUN set -eux; \
     apt update -y; \
     apt install \
         python3 python3-venv \
-        curl tree jq \
+        curl envsubst tree jq \
         -y; \
     apt clean && rm -rf /var/lib/apt/lists/*; \
     \
@@ -50,7 +53,7 @@ RUN set -eux; \
         mineru;
 
 # Copy project files
-COPY src/ /app/
+COPY src /app/
 COPY .env.example .flaskenv gunicorn.conf.py requirements.txt /app/
 
 # Install dependent packages
@@ -75,23 +78,18 @@ RUN set -eux; \
         --no-color \
         --disable-pip-version-check; \
     \
-    if [ -d ~/.config/pip ]; then \
-        rm -rf ~/.config/pip; \
-    fi; \
-    if [ -d ~/.cache/pip ]; then \
-        rm -rf ~/.cache/pip; \
-    fi; \
-    chown -R mineru:mineru .venv;
+    rm -rf ~/.cache; \
+    rm -rf ~/.config;
 
 # Added entrypoint.sh
 COPY entrypoint.sh /usr/local/bin/
 
 WORKDIR /app
 
-VOLUME [ "/app/.cache", "/app/instance" ]
+VOLUME [ "/app/.cache", "/app/instance", "/app/models" ]
 
 EXPOSE 8080/tcp
 
 ENTRYPOINT [ "entrypoint.sh" ]
 
-CMD [ "/app/.venv/bin/gunicorn" ]
+CMD [ "api" ]
