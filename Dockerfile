@@ -72,6 +72,7 @@ RUN set -eux; \
         pip config set global.extra-index-url $PIP_EXTRA; \
     fi; \
     \
+    pip3 install "wheel~=0.45.1"; \
     pip3 install \
         --requirement requirements.txt \
         --no-cache-dir \
