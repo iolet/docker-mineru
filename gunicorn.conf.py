@@ -5,7 +5,7 @@ from pathlib import Path
 wsgi_app = 'src.mineru_pdf:create_app()'
 
 # listen address and port
-bind = ['0.0.0.0:8889']
+bind = ['0.0.0.0:8080']
 
 # worker process
 workers = 4
