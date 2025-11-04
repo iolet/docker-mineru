@@ -13,7 +13,7 @@ elif [ "queue" = "${1}" ]; then
         --max-tasks-per-child 10 \
         --loglevel DEBUG
 else
-    exec gosu mineru "$@"
+    exec "$@"
 fi
 
 # Ensure instance folders exists
