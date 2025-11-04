@@ -31,7 +31,7 @@ RUN set -eux; \
 # Install gosu for dropping root user
 RUN set -eux; \
     \
-    cd \tmp; \
+    cd /tmp; \
     \
     curl --progress-bar --location --remote-name https://github.com/tianon/gosu/releases/download/1.19/gosu-amd64; \
     curl --progress-bar --location --remote-name https://github.com/tianon/gosu/releases/download/1.19/SHA256SUMS; \
@@ -39,7 +39,7 @@ RUN set -eux; \
     cp gosu-amd64 /usr/local/bin/gosu; \
     chmod +x /usr/local/bin/gosu; \
     \
-    rm -rf \tmp\*;
+    rm -rf /tmp/*;
 
 # Added rootless user and group
 RUN set -eux; \
