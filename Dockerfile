@@ -87,7 +87,7 @@ RUN set -eux; \
 
 WORKDIR /app
 
-VOLUME [ "/app/.cache", "/app/instance", "/app/models" ]
+VOLUME [ "/app/instance", "/app/models" ]
 
 EXPOSE 8080/tcp
 

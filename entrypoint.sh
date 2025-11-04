@@ -25,11 +25,11 @@ for subdir in $subdirs; do
     fi
 done
 
+# Ensure models path exists
 if [ ! -d "${MODEL_PDFEXTRACTKIT_PATH}" ]; then
     echo "MODEL_PDFEXTRACTKIT_PATH (${MODEL_PDFEXTRACTKIT_PATH}) not exists"
     exit 3
 fi
-
 if [ ! -d "${MODEL_LAYOUTREADER_PATH}" ]; then
     echo "MODEL_LAYOUTREADER_PATH (${MODEL_LAYOUTREADER_PATH}) not exists"
     exit 3
@@ -45,7 +45,8 @@ fi
 flask db upgrade
 deactivate
 
-# Clean variables
+# Fix permission and Clean variables
+chown --recursive mineru:mineru "${prefix}"
 unset prefix
 
 exec gosu mineru "$@"
