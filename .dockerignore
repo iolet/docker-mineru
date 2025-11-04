@@ -1,45 +1,8 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Flask stuff:
-.webassets-cache
-
-# Sphinx documentation
-/_build
-/_static
-/_templates
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# Environments
-.env
-.venv/
-venv/
-
-# IDEs and Editors
-.idea/
-.vs/
-.vscode/
-
-# pytest and unittest
-/.pytest_cache
-
-# wheel dist
-/dist
-/_version.py
-
-# Other files
-instance/
-*.template
-*.http
-*.log
-conf.py
-LICENSE
-Makefile
-pyproject.toml
-README.rst
-requirements-dev.txt
+*
+!.env.example
+!.flaskenv
+!entrypoint.sh
+!gunicorn.conf.py
+!magic-pdf.json.template
+!requirements.txt
+!src

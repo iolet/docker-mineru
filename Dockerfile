@@ -53,8 +53,7 @@ RUN set -eux; \
         mineru;
 
 # Copy project files
-COPY src /app/
-COPY .env.example .flaskenv gunicorn.conf.py requirements.txt /app/
+COPY --chown=mineru:mineru . /app/
 
 # Install dependent packages
 RUN set -eux; \
@@ -86,15 +85,12 @@ RUN set -eux; \
     rm -rf ~/.cache; \
     rm -rf ~/.config;
 
-# Added entrypoint.sh
-COPY entrypoint.sh /usr/local/bin/
-
 WORKDIR /app
 
 VOLUME [ "/app/.cache", "/app/instance", "/app/models" ]
 
 EXPOSE 8080/tcp
 
-ENTRYPOINT [ "entrypoint.sh" ]
+ENTRYPOINT [ "/app/entrypoint.sh" ]
 
 CMD [ "api" ]
