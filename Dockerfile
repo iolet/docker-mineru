@@ -82,6 +82,12 @@ RUN set -eux; \
         --disable-pip-version-check; \
     pip3 install \
         --requirement requirements.txt \
+        --prefer-binary \
+        --no-cache-dir \
+        --no-color \
+        --disable-pip-version-check; \
+    pip3 install \
+        "paddlepaddle-gpu==2.6.2" \
         --only-binary ':all:' \
         --no-cache-dir \
         --no-color \
