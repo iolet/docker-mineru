@@ -98,7 +98,7 @@ RUN set -eux; \
 
 WORKDIR /app
 
-VOLUME [ "/app/instance", "/app/models" ]
+VOLUME [ "/app/.paddleocr", "/app/instance", "/app/models" ]
 
 EXPOSE 8080/tcp
 
