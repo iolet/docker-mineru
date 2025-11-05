@@ -4,6 +4,8 @@ ARG APT_ARCHIVES=http://archive.ubuntu.com
 ARG APT_SECURITY=http://security.ubuntu.com
 ARG PIP_INDEX=https://pypi.org
 ARG PIP_EXTRA=https://pypi.example.com
+ARG GOSU_DIST=https://github.com/tianon/gosu/releases/download/1.19/gosu-amd64
+ARG GOSU_SUMS=https://github.com/tianon/gosu/releases/download/1.19/SHA256SUMS
 
 ENV MODEL_PDFEXTRACTKIT_PATH=/app/models/opendatalab--PDF-Extract-Kit-1.0
 ENV MODEL_LAYOUTREADER_PATH=/app/models/ppaanngggg--layoutreader
@@ -34,9 +36,9 @@ RUN set -eux; \
     \
     cd /tmp; \
     \
-    curl --progress-bar --location --remote-name https://github.com/tianon/gosu/releases/download/1.19/gosu-amd64; \
-    curl --progress-bar --location --remote-name https://github.com/tianon/gosu/releases/download/1.19/SHA256SUMS; \
-    sha256sum --check --strict --ignore-missing SHA256SUMS; \
+    curl --progress-bar --location --remote-name ${GOSU_DIST}; \
+    curl --progress-bar --location --remote-name ${GOSU_SUMS}; \
+    sha256sum --check --strict --ignore-missing $(basename "${GOSU_SUMS}"); \
     cp gosu-amd64 /usr/local/bin/gosu; \
     chmod +x /usr/local/bin/gosu; \
     \
