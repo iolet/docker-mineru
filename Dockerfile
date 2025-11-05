@@ -76,11 +76,13 @@ RUN set -eux; \
     \
     pip3 install \
         "wheel~=0.45.1" \
+        --only-binary ':all:' \
         --no-cache-dir \
         --no-color \
         --disable-pip-version-check; \
     pip3 install \
         --requirement requirements.txt \
+        --only-binary ':all:' \
         --no-cache-dir \
         --no-color \
         --disable-pip-version-check; \
