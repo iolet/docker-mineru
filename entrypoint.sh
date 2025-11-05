@@ -60,6 +60,6 @@ deactivate
 
 # Fix permission and Clean variables
 chown --recursive mineru:mineru "${prefix}"
-unset prefix
+unset prefix subdirs subdir nv_prefix workdir
 
 exec gosu mineru "$@"
