@@ -22,8 +22,6 @@ pillow==11.3.0
 pycocotools==2.0.8
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
-rapid-table==1.0.3
-rapidocr-paddle==1.4.5
 redis==5.2.1
 requests==2.32.3
 SQLAlchemy==2.0.39
