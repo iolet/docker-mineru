@@ -15,9 +15,11 @@ magic-pdf==1.2.2
 marshmallow==3.26.1
 numpy==1.26.4
 openai==1.68.2
+opencv-contrib-python==4.11.0.86
 opencv-python==4.11.0.86
 opencv-python-headless==4.11.0.86
 packaging==24.2
+paddleocr==2.10.0
 pillow==11.3.0
 pycocotools==2.0.8
 python-dateutil==2.9.0.post0
