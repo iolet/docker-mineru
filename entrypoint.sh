@@ -27,11 +27,17 @@ cd $workdir
 export LD_LIBRARY_PATH=${nv_prefix}/cudnn/lib:${nv_prefix}/cublas/lib
 
 # Ensure target correct
-if [ "api" = "${1}" ]; then
+if [ "prompt" = "${1}" ]; then
+    echo "missing argument <app>, available:"
+    echo "    api    for sync api endpoint serve"
+    echo "    queue  for async background task"
+    exit 1
+elif [ "api" = "${1}" ]; then
     set -- /app/.venv/bin/gunicorn --config gunicorn.conf.py
 elif [ "queue" = "${1}" ]; then
-    set -- /app/.venv/bin/celery worker \
+    set -- /app/.venv/bin/celery \
         --app src.mineru_pdf.celery.app \
+        worker \
         --concurrency 1 \
         --time-limit 1800 \
         --soft-time-limit 1500 \

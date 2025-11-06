@@ -104,4 +104,4 @@ EXPOSE 8080/tcp
 
 ENTRYPOINT [ "/app/entrypoint.sh" ]
 
-CMD [ "api" ]
+CMD [ "prompt" ]
