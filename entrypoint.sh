@@ -59,9 +59,12 @@ if [ ! -d "${MODEL_LAYOUTREADER_PATH}" ]; then
     exit 3
 fi
 
-# Migrate database
+# Migrate database and link directory
 . .venv/bin/activate
 flask db upgrade
+if [ ! -L "/app/instance/public/archives" ]; then
+    flask storage link
+fi
 deactivate
 
 # Fix permission and Clean variables
