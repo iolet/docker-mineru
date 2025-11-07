@@ -26,6 +26,7 @@ pycocotools==2.0.8
 PyMySQL==1.1.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
+pytz==2025.2
 rapid-table==1.0.3
 rapidocr-paddle==1.4.5
 redis==5.2.1

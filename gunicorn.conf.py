@@ -1,11 +1,12 @@
 from datetime import time
 from pathlib import Path
+from pytz import timezone
 
 # loading target application
 wsgi_app = 'src.mineru_pdf:create_app()'
 
 # listen address and port
-bind = ['0.0.0.0:8080']
+bind = ['127.0.0.1:8080']
 
 # worker process
 workers = 4
@@ -64,7 +65,7 @@ logconfig_dict = {
             'when': 'midnight',
             'backupCount': 24,
             'delay': True,
-            'atTime': time(0, 0, 0, 0)
+            'atTime': time(tzinfo=timezone('Asia/Shanghai'))
         },
         'access_log': {
             'class': 'concurrent_log_handler.ConcurrentTimedRotatingFileHandler',
@@ -73,7 +74,7 @@ logconfig_dict = {
             'when': 'midnight',
             'backupCount': 24,
             'delay': True,
-            'atTime': time(0, 0, 0, 0)
+            'atTime': time(tzinfo=timezone('Asia/Shanghai'))
         },
         'console_stdout': {
             'class': 'logging.StreamHandler',
