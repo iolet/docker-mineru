@@ -6,7 +6,7 @@ from pytz import timezone
 wsgi_app = 'src.mineru_pdf:create_app()'
 
 # listen address and port
-bind = ['127.0.0.1:8080']
+bind = ['0.0.0.0:18080']
 
 # worker process
 workers = 4
