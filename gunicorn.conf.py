@@ -1,3 +1,4 @@
+import os
 from datetime import time
 from pathlib import Path
 from pytz import timezone
@@ -6,16 +7,16 @@ from pytz import timezone
 wsgi_app = 'src.mineru_pdf:create_app()'
 
 # listen address and port
-bind = ['0.0.0.0:18080']
+bind = [ f'{os.getenv('BIND', '127.0.0.1:18089')}']
 
 # worker process
-workers = 4
+workers = int(os.getenv('WORKERS', 4))
 
 # maximum number of requests a worker will process before restarting
-max_requests = 400
+max_requests = int(os.getenv('MAX_REQUESTS', 200))
 
 # maximum jitter to add the max_requests
-max_requests_jitter = 4
+max_requests_jitter = int(max_requests * 0.1)
 
 # pretty process naming
 proc_name = 'mineru_pdf'
@@ -28,7 +29,7 @@ daemon = False
 worker_tmp_dir = '/tmp'
 
 # workers silent for more than this may seconds are killed and restarted
-timeout = 7200
+timeout = int(os.getenv('TIMEOUT', 7200))
 
 # logging handle global, added thread number and logger name
 logconfig_dict = {
