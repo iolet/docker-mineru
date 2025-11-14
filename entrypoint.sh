@@ -18,10 +18,14 @@ fi
 nv_prefix=/app/.venv/lib/python3.10/site-packages/nvidia
 
 workdir=$(pwd)
-cd "${nv_prefix}/cudnn/lib"; \
-ln -s libcudnn.so.9 libcudnn.so; \
-cd "${nv_prefix}/cublas/lib"; \
-ln -s libcublas.so.12 libcublas.so;
+if [ ! -L "${nv_prefix}/cudnn/lib/libcudnn.so" ]; then
+    cd "${nv_prefix}/cudnn/lib"; \
+    ln -s libcudnn.so.9 libcudnn.so; \
+fi
+if [ ! -L "${nv_prefix}/cublas/lib/libcublas.so" ]; then
+    cd "${nv_prefix}/cublas/lib"; \
+    ln -s libcublas.so.12 libcublas.so;
+fi
 cd $workdir
 
 export LD_LIBRARY_PATH=${nv_prefix}/cudnn/lib:${nv_prefix}/cublas/lib
