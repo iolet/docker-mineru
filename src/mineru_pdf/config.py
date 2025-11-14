@@ -52,26 +52,34 @@ class Default_(object):
 
     @property
     def DB_PORT(self) -> Optional[int]:
-        port_str = self.env_pair.get('DB_PORT')
-        return port_str if port_str is None else int(port_str)
+
+        port_str: Optional[str] = self.env_pair.get('DB_PORT')
+
+        if isinstance(port_str, str) and port_str.isspace():
+            port_str = None
+
+        if port_str is None:
+            return port_str;
+
+        return int(port_str)
 
     @property
     def DB_DATABASE(self) -> Optional[str]:
 
-        db = self.env_pair.get('DB_DATABASE')
+        db: Optional[str] = self.env_pair.get('DB_DATABASE')
 
         if not db and 'sqlite' in self.DB_DRIVER:
-            return 'db.sqlite3'
+            return str(self.__instance_path.joinpath('db.sqlite3'))
 
         return db
 
     @property
-    def DB_USERNAME(self) -> Optional[str]:
-        return self.env_pair.get('DB_USERNAME')
+    def DB_USERNAME(self) -> str:
+        return self.env_pair.get('DB_USERNAME') or 'forge'
 
     @property
-    def DB_PASSWORD(self) -> Optional[str]:
-        return self.env_pair.get('DB_PASSWORD')
+    def DB_PASSWORD(self) -> str:
+        return self.env_pair.get('DB_PASSWORD') or 'forge'
 
     @property
     def SQLALCHEMY_DATABASE_URI(self)-> Optional[str]:
@@ -118,7 +126,9 @@ class Default_(object):
     @property
     def FLASK_PYDANTIC_VALIDATION_ERROR_RAISE(self) -> bool:
 
-        bool_str = self.env_pair.get('FLASK_PYDANTIC_VALIDATION_ERROR_RAISE') or 'false'
+        bool_str: str = self.env_pair.get(
+            'FLASK_PYDANTIC_VALIDATION_ERROR_RAISE'
+        ) or 'false'
 
         if bool_str in [ 'true', 'yes' ]:
             return True
