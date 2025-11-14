@@ -55,7 +55,7 @@ class Default_(object):
 
         port_str: Optional[str] = self.env_pair.get('DB_PORT')
 
-        if isinstance(port_str, str) and port_str.isspace():
+        if isinstance(port_str, str) and not port_str.strip():
             port_str = None
 
         if port_str is None:
