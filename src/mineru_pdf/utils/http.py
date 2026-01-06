@@ -1,4 +1,3 @@
-import hashlib
 import logging
 from pathlib import Path
 from urllib.parse import ParseResult, urlparse
@@ -22,18 +21,6 @@ def download_file(uri: str, sink: Path) -> Path:
                 f.write(chunk)
 
     return sink
-
-def calc_sha256sum(file_path: Path, prefix_algo: bool = True) -> str:
-
-    hash_func = hashlib.new('sha256')
-
-    with open(file_path, 'rb') as f:
-        while chunk := f.read(8192):
-            hash_func.update(chunk)
-
-    algo_prefix: str = 'sha256:' if prefix_algo else ''
-
-    return algo_prefix + hash_func.hexdigest()
 
 def post_callback(task: Task) -> None:
 

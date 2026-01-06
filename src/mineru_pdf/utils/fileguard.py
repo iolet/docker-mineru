@@ -1,4 +1,5 @@
 import os
+import hashlib
 import logging
 import zipfile
 from datetime import datetime
@@ -35,6 +36,18 @@ def as_semantic(task: Task) -> str:
         f'taskid.{task.uuid}',
         f'moment.{moment.format("YYYYMMDDHHmm")}'
     ])
+
+def calc_sha256sum(file_path: Path, prefix_algo: bool = True) -> str:
+
+    hash_func = hashlib.new('sha256')
+
+    with open(file_path, 'rb') as f:
+        while chunk := f.read(8192):
+            hash_func.update(chunk)
+
+    algo_prefix: str = 'sha256:' if prefix_algo else ''
+
+    return algo_prefix + hash_func.hexdigest()
 
 def create_savedir(moment: arrow.Arrow) -> Path:
 
