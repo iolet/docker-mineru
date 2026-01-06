@@ -29,10 +29,11 @@ def create(body: TaskRequest):
         file_id=body.file_id,
         file_url=str(body.file_url),
         finetune_args=json.dumps({
-            'apply_ocr': body.apply_ocr,
+            'parser_engine': body.parser_engine,
+            'parser_prefer': body.parser_prefer,
+            'target_language': body.target_language,
             'enable_formula': body.enable_formula,
             'enable_table': body.enable_table,
-            'target_language': body.prefer_language,
         }),
         callback_url=str(body.callback_url),
         status=Status.CREATED,

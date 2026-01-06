@@ -8,6 +8,7 @@ import mineru.cli.common
 import torch
 
 from .fileguard import output_data_handler, output_dirs_handler
+from ..requests import ParserEngines, ParserPrefers, TargetLanguages
 from ..tasks.exceptions import CUDANotAvailableError, GPUOutOfMemoryError
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,8 @@ def magic_args(input_args: dict) -> dict:
     result_args: dict = {}
 
     input_args.setdefault('parser_prefer', 'auto')
-    if input_args['parser_prefer'] not in [ 'auto', 'ocr', 'txt' ]:
+    available_prefers = [ member.value for name, member in ParserPrefers.__members__.items() ]
+    if input_args['parser_prefer'] not in available_prefers:
         raise RuntimeError(
             f'unknown parser_prefer {input_args["parser_prefer"]},'
             f'supported value are auto (default), ocr (for many picture)'
@@ -31,10 +33,11 @@ def magic_args(input_args: dict) -> dict:
     result_args['parse_method'] = input_args['parser_prefer']
 
     input_args.setdefault('target_language', 'ch')
-    if input_args['target_language'] not in [ 'ch', 'en' ]:
+    available_languages = [ member.value for name, member in TargetLanguages.__members__.items() ]
+    if input_args['target_language'] not in available_languages:
         raise RuntimeError(
             f'unknown target_language {input_args["target_language"]},'
-            f'supported value are ch (chinese) and en (english)'
+            f'supported value are { ', '.join(available_languages) }'
         )
     result_args['lang_list'] = [ input_args['target_language'] ]
 
@@ -53,10 +56,7 @@ def magic_args(input_args: dict) -> dict:
     result_args['table_enable'] = input_args['enable_table']
 
     input_args.setdefault('parser_engine', 'hybrid-auto-engine')
-    available_engines = [
-        'pipeline', 'vlm-auto-engine', 'vlm-http-client',
-        'hybrid-auto-engine', 'hybrid-http-client',
-    ]
+    available_engines = [ member.value for name, member in ParserEngines.__members__.items() ]
     if input_args['parser_engine'] not in available_engines:
         raise RuntimeError(
             f'unknown parser_engine {input_args["parser_engine"]},'
