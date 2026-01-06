@@ -1,70 +1,79 @@
 import os
-import subprocess
+import logging
+import zipfile
+from datetime import datetime
 from pathlib import Path
 from typing import Union
 
+import arrow
 import filetype
 import fitz
+from dateutil import tz
+from flask import current_app
 from magic_pdf.data.data_reader_writer.filebase import FileBasedDataWriter
 
+from ..models import Task
 from ..tasks.exceptions import (
     FileEncryptionFoundError, FileMIMEUnsupportedError,
     FilePageRatioInvalidError,
 )
 
 
-def img2pdf(input_file: Path) -> Path:
+logger = logging.getLogger(__name__)
 
-    if not input_file.is_file():
-        raise ValueError('not a regular file')
+def as_semantic(task: Task) -> str:
 
-    ext = filetype.guess_extension(input_file)
+    if not isinstance(task.started_at, datetime):
+        raise RuntimeError('started_at does not exists or empty')
 
-    if ext not in [ 'png', 'jpg', 'jpeg', ]:
-        raise FileMIMEUnsupportedError(
-            f'unsupported convert {input_file.name} to'
-            f'{input_file.with_suffix(".pdf").name}'
-        )
+    moment: str = arrow.get(
+        task.started_at, tz.gettz(current_app.config.get('TIMEZONE')) # type: ignore
+    ) # type: ignore
 
-    origin = fitz.open(str(input_file))
+    return '_'.join([
+        f'taskid.{task.uuid}',
+        f'moment.{moment.format("YYYYMMDDHHmm")}'
+    ])
 
-    output: Path = input_file.with_suffix('.pdf')
-    with output.open('wb') as fp:
-        fp.write(origin.convert_to_pdf())
+def create_savedir(moment: arrow.Arrow) -> Path:
 
-    origin.close()
-    del origin
+    save_dir: Path = Path(
+        current_app.instance_path
+    ).joinpath(
+        'archives', moment.format('YYYY-MM-DD')
+    ).resolve()
 
-    return output
+    if not save_dir.exists():
+        save_dir.mkdir(parents=True, exist_ok=True)
 
-def doc2pdf(input_file: Path):
+    return save_dir
 
-    if not input_file.is_file():
-        raise ValueError(f'{input_file} not a regular file')
+def create_workdir(folder_name: str) -> Path:
 
-    ext = filetype.guess_extension(input_file)
+    workdir: Path = Path(
+        current_app.instance_path
+    ).joinpath(
+        'cache', folder_name
+    ).resolve()
 
-    if ext not in [ 'ppt', 'pptx', 'doc', 'docx' ]:
-        raise FileMIMEUnsupportedError(
-            f'unsupported {input_file.name} to'
-            f'{input_file.with_suffix(".pdf").name}'
-        )
+    if not workdir.exists():
+        workdir.mkdir(parents=True, exist_ok=True)
 
-    output = input_file.resolve().with_suffix('.pdf')
-    process = subprocess.run([
-        'soffice', '--headless',
-        '--convert-to', 'pdf',
-        '--outdir', output.parent,
-        input_file.resolve()
-    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
+    return workdir
 
-    if 0 != process.returncode:
-        raise ValueError(
-            f'failed convert {input_file.name} to'
-            f'{output.name}'
-        )
+def create_zipfile(zip_file: Path, target_dir: Path) -> Path:
 
-    return output
+    if not zip_file.parent.is_dir() or zip_file.exists():
+        raise ValueError(f"The provided zip_file {zip_file} is not a valid file path or exists")
+
+    if not target_dir.is_dir():
+        raise ValueError(f"The provided path {target_dir} is not a valid directory.")
+
+    with zipfile.ZipFile(zip_file, 'x', zipfile.ZIP_DEFLATED) as tar:
+        for file in target_dir.rglob('*'):
+            tar.write(file, file.relative_to(target_dir))
+
+    return zip_file
 
 def file_check(input_file: Path) -> None:
 
