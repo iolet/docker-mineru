@@ -1,16 +1,19 @@
 import os
 import hashlib
+import json
 import logging
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Union
 
 import arrow
 import filetype
 from dateutil import tz
 from flask import current_app
-from mineru.data.data_reader_writer.filebase import FileBasedDataWriter
+from mineru.backend.pipeline.pipeline_middle_json_mkcontent import union_make as pipeline_union_make
+from mineru.backend.vlm.vlm_middle_json_mkcontent import union_make as vlm_union_make
+from mineru.utils.draw_bbox import draw_layout_bbox, draw_span_bbox, draw_line_sort_bbox
+from mineru.utils.enum_class import MakeMode
 from pypdfium2 import PdfDocument, PdfPage, PdfiumError, raw as pdfium2_raw
 from pypdfium2.internal.consts import ErrorToStr
 
@@ -130,39 +133,70 @@ def file_check(input_file: Path) -> None:
     finally:
         document.close()
 
-class ImgWriter(FileBasedDataWriter):
-    """Write image data to file"""
+def output_dirs_handler(output_dir, pdf_file_name, parse_method):
+    txt_dir = Path(output_dir)
+    txt_dir.mkdir(parents=True, exist_ok=True)
+    img_dir = Path(output_dir).joinpath('images')
+    img_dir.mkdir(parents=True, exist_ok=True)
+    return str(img_dir), str(txt_dir)
 
-    def __init__(self, parent_dir: Union[Path, str] = '') -> None:
-        """Initialized with parent_dir.
+def output_data_handler(
+        pdf_info: dict,
+        pdf_bytes: bytes,
+        pdf_file_name: str,
+        local_md_dir: Path,
+        local_image_dir: Path,
+        md_writer,
+        f_draw_layout_bbox: bool,
+        f_draw_span_bbox: bool,
+        f_dump_orig_pdf: bool,
+        f_dump_md: bool,
+        f_dump_content_list: bool,
+        f_dump_middle_json: bool,
+        f_dump_model_output: bool,
+        f_make_md_mode: MakeMode,
+        middle_json: dict,
+        model_output: dict,
+        is_pipeline: bool
+) -> None:
 
-        Args:
-            parent_dir (str, optional): the parent directory that may be used within methods. Defaults to ''.
-        """
-        super().__init__(str(parent_dir))
+    image_dir = str(os.path.basename(local_image_dir))
 
-class TxtWriter(FileBasedDataWriter):
-    """Write txt data to file and replace path inside"""
+    # for content
+    make_func = pipeline_union_make if is_pipeline else vlm_union_make
+    md_content_str = make_func(pdf_info, f_make_md_mode, image_dir) # type: ignore
+    md_writer.write_string(f"content.md", md_content_str)
 
-    def __init__(self, parent_dir: Union[Path, str] = '') -> None:
-        """Initialized with parent_dir.
+    # for content list
+    make_func = pipeline_union_make if is_pipeline else vlm_union_make
+    if is_pipeline:
+        content_list = make_func(pdf_info, MakeMode.CONTENT_LIST, image_dir) # type: ignore
+        md_writer.write_string(
+            f"content_list.json",
+            json.dumps(content_list, ensure_ascii=False, indent=2),
+        )
+    else:
+        content_list_v2 = make_func(pdf_info, MakeMode.CONTENT_LIST_V2, image_dir) # type: ignore
+        md_writer.write_string(
+            f"content_list_v2.json",
+            json.dumps(content_list_v2, ensure_ascii=False, indent=2),
+        )
 
-        Args:
-            parent_dir (str, optional): the parent directory that may be used within methods. Defaults to ''.
-        """
-        super().__init__(str(parent_dir))
+    # for middle
+    md_writer.write_string(
+        f"middle.json", json.dumps(middle_json, ensure_ascii=False, indent=2)
+    )
 
-    def write_string(self, path: str, data: str) -> None:
-        """Write the data to file, the data will be encoded to bytes.
+    # for model
+    md_writer.write_string(
+        f"model.json", json.dumps(model_output, ensure_ascii=False, indent=2)
+    )
 
-        Args:
-            path (Path | str): the target file where to write
-            data (str): the data want to write
-        """
+    # for debug
+    if f_draw_layout_bbox or f_draw_span_bbox:
+        draw_layout_bbox(pdf_info, pdf_bytes, local_md_dir, f"layout.pdf")
+        draw_span_bbox(pdf_info, pdf_bytes, local_md_dir, f"spans.pdf")
+        draw_line_sort_bbox(pdf_info, pdf_bytes, local_md_dir, f"line_sort.pdf")
 
-        savedir: Path = Path(self._parent_dir)
-
-        if savedir.is_absolute():
-            data = data.replace(str(savedir) + os.sep, '')
-
-        super().write_string(path, data)
+    if f_dump_orig_pdf:
+        md_writer.write(f"origin.pdf", pdf_bytes)
