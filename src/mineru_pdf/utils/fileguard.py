@@ -7,10 +7,11 @@ from typing import Union
 
 import arrow
 import filetype
-import fitz
 from dateutil import tz
 from flask import current_app
-from magic_pdf.data.data_reader_writer.filebase import FileBasedDataWriter
+from mineru.data.data_reader_writer.filebase import FileBasedDataWriter
+from pypdfium2 import PdfDocument, PdfPage, PdfiumError, raw as pdfium2_raw
+from pypdfium2.internal.consts import ErrorToStr
 
 from ..models import Task
 from ..tasks.exceptions import (
@@ -18,8 +19,8 @@ from ..tasks.exceptions import (
     FilePageRatioInvalidError,
 )
 
-
 logger = logging.getLogger(__name__)
+
 
 def as_semantic(task: Task) -> str:
 
@@ -85,25 +86,26 @@ def file_check(input_file: Path) -> None:
     if 'pdf' != mime:
         raise FileMIMEUnsupportedError(f'mine type {mime} is unsupported')
 
-    document: fitz.Document = fitz.open(input_file)
-
+    # file should not have any encrypted
     try:
-
-        # file should not have any encrypted
-        # see https://pymupdf.readthedocs.io/en/latest/recipes-low-level-interfaces.html#how-to-access-the-pdf-file-trailer
-        trailer: str = document.xref_object(-1)
-        if '/Encrypt' in trailer:
+        document: PdfDocument = PdfDocument(input_file)
+    except PdfiumError as e:
+        if ErrorToStr.get(pdfium2_raw.FPDF_ERR_PASSWORD) in str(e):
             raise FileEncryptionFoundError('unsupported encrypted file')
-
-        # page should be common, avoid too height or width
-        page = document.load_page(0)
-
-        if page.rect.width < page.rect.height:
-            longer = page.rect.height
-            shorter = page.rect.width
         else:
-            longer = page.rect.width
-            shorter = page.rect.height
+            raise e
+
+    # page should be common, avoid too height or width
+    try:
+        page: PdfPage = document.get_page(0)
+        width, height = page.get_size()
+
+        if width < height:
+            longer = height
+            shorter = width
+        else:
+            longer = width
+            shorter = height
 
         ratio = longer / shorter
 
@@ -113,9 +115,7 @@ def file_check(input_file: Path) -> None:
             )
 
     finally:
-        if getattr(document, 'is_closed', False):
-            document.close()
-        del document
+        document.close()
 
 class ImgWriter(FileBasedDataWriter):
     """Write image data to file"""
@@ -139,7 +139,7 @@ class TxtWriter(FileBasedDataWriter):
         """
         super().__init__(str(parent_dir))
 
-    def write_string(self, file: str, data: str) -> None:
+    def write_string(self, path: str, data: str) -> None:
         """Write the data to file, the data will be encoded to bytes.
 
         Args:
@@ -152,4 +152,4 @@ class TxtWriter(FileBasedDataWriter):
         if savedir.is_absolute():
             data = data.replace(str(savedir) + os.sep, '')
 
-        super().write_string(file, data)
+        super().write_string(path, data)

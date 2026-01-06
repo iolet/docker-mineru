@@ -48,7 +48,7 @@ def create_app():
     app.register_error_handler(Exception, handle_server_error) # type: ignore
 
     # integrate celery with flask
-    from .utils.integrators import integrate_celery
+    from .utils.celeryq import integrate_celery
     integrate_celery(app)
 
     app.logger.info(f'Current Instance Path -> {app.instance_path}')
