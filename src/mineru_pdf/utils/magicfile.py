@@ -22,6 +22,15 @@ def magic_args(input_args: dict) -> dict:
 
     result_args: dict = {}
 
+    input_args.setdefault('parser_engine', 'hybrid-auto-engine')
+    available_engines = [ member.value for name, member in ParserEngines.__members__.items() ]
+    if input_args['parser_engine'] not in available_engines:
+        raise RuntimeError(
+            f'unknown parser_engine {input_args["parser_engine"]},'
+            f'supported value are {", ".join(available_engines)}'
+        )
+    result_args['backend'] = input_args['parser_engine']
+
     input_args.setdefault('parser_prefer', 'auto')
     available_prefers = [ member.value for name, member in ParserPrefers.__members__.items() ]
     if input_args['parser_prefer'] not in available_prefers:
@@ -54,15 +63,6 @@ def magic_args(input_args: dict) -> dict:
             'invalid type for enable_table, only supported True and False'
         )
     result_args['table_enable'] = input_args['enable_table']
-
-    input_args.setdefault('parser_engine', 'hybrid-auto-engine')
-    available_engines = [ member.value for name, member in ParserEngines.__members__.items() ]
-    if input_args['parser_engine'] not in available_engines:
-        raise RuntimeError(
-            f'unknown parser_engine {input_args["parser_engine"]},'
-            f'supported value are {", ".join(available_engines)}'
-        )
-    result_args['backend'] = input_args['parser_engine']
 
     input_args.setdefault('enable_formula', False)
     if not isinstance(input_args['enable_formula'], bool):
