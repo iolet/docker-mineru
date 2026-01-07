@@ -55,21 +55,7 @@ def magic_args(input_args: dict) -> dict:
         raise RuntimeError(
             'invalid type for enable_formula, only supported True and False'
         )
-    result_args['formula_enable'] = input_args['enable_formula']
-
-    input_args.setdefault('enable_table', True)
-    if not isinstance(input_args['enable_table'], bool):
-        raise RuntimeError(
-            'invalid type for enable_table, only supported True and False'
-        )
-    result_args['table_enable'] = input_args['enable_table']
-
-    input_args.setdefault('enable_formula', False)
-    if not isinstance(input_args['enable_formula'], bool):
-        raise RuntimeError(
-            'invalid type for enable_formula, only supported True and False'
-        )
-    result_args['formula_enable'] = input_args['enable_formula']
+    result_args['formula_enabled'] = input_args['enable_formula']
     os.environ['MINERU_VLM_FORMULA_ENABLE'] = str(input_args['enable_formula'])
 
     input_args.setdefault('enable_table', True)
@@ -77,7 +63,7 @@ def magic_args(input_args: dict) -> dict:
         raise RuntimeError(
             'invalid type for enable_table, only supported True and False'
         )
-    result_args['table_enable'] = input_args['enable_table']
+    result_args['table_enabled'] = input_args['enable_table']
     os.environ['MINERU_VLM_TABLE_ENABLE'] = str(input_args['enable_table'])
 
     logger.info(f'output args {result_args}')
@@ -100,8 +86,8 @@ def magic_file(input_file: Path, output_dir: Path,  **magic_kwargs: Dict[str, Un
             p_lang_list=magic_kwargs.get('lang_list'), # type: ignore
             backend=magic_kwargs.get('backend'), # type: ignore
             parse_method=magic_kwargs.get('parse_method'), # type: ignore
-            formula_enable=magic_kwargs.get('formula_enable'), # type: ignore
-            table_enable=magic_kwargs.get('table_enable'), # type: ignore
+            formula_enable=magic_kwargs.get('formula_enabled'), # type: ignore
+            table_enable=magic_kwargs.get('table_enabled'), # type: ignore
             f_draw_layout_bbox=magic_kwargs.get('enable_review', False), # type: ignore
             f_dump_orig_pdf=magic_kwargs.get('enable_review', False) # type: ignore
         )
