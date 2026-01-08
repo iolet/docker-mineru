@@ -34,13 +34,15 @@ def create_app():
     )
 
     # register commands
-    from .cli.extraction import extract
+    from .cli.parser import parse_file
     from .cli.storage import storage
-    app.cli.add_command(extract)
+    app.cli.add_command(parse_file)
     app.cli.add_command(storage)
 
     # register blueprint
+    from .api.v4.parser import parser
     from .api.v4.tasks import tasks
+    app.register_blueprint(parser, url_prefix='/api/v4')
     app.register_blueprint(tasks, url_prefix='/api/v4')
 
     # register fallback handler

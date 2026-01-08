@@ -15,9 +15,11 @@ from sqlalchemy.exc import NoResultFound
 from .constants import Errors, Result, Status, find_http_errors
 from ..models import Task
 from ..services import database
-from ..utils.fileguard import file_check
-from ..utils.filepath import as_semantic, create_savedir, create_workdir, create_zipfile
-from ..utils.http import calc_sha256sum, download_file, post_callback
+from ..utils.fileguard import (
+    as_semantic, calc_sha256sum, file_check,
+    create_savedir, create_workdir, create_zipfile
+)
+from ..utils.httpclient import download_file, post_callback
 
 logger = get_task_logger(__name__)
 

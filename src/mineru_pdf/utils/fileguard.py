@@ -3,8 +3,10 @@ import hashlib
 import json
 import logging
 import zipfile
+from base64 import b64encode
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 import arrow
 import filetype
@@ -132,6 +134,25 @@ def file_check(input_file: Path) -> None:
 
     finally:
         document.close()
+
+def receive_json(file: Path):
+    return json.loads(receive_text(file) or '{}')
+
+def receive_text(file: Path) -> Optional[str]:
+    with file.open('r') as f:
+        return f.read()
+
+def locate_image(image: Path) -> str:
+    return image.name
+
+def encode_image(image: Path) -> Optional[str]:
+    with image.open('rb') as f:
+        return f'data:image/jpeg;base64,{b64encode(f.read()).decode()}'
+
+def pickup_images(image_dir: Path) -> dict:
+    return {
+        locate_image(image) : encode_image(image) for image in image_dir.glob('*.jpg')
+    }
 
 def output_dirs_handler(output_dir, pdf_file_name, parse_method):
     txt_dir = Path(output_dir)

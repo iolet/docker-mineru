@@ -8,7 +8,7 @@ import mineru.cli.common
 import torch
 
 from .fileguard import output_data_handler, output_dirs_handler
-from ..requests import ParserEngines, ParserPrefers, TargetLanguages
+from .requests import ParserEngines, ParserPrefers, TargetLanguages
 from ..tasks.exceptions import CUDANotAvailableError, GPUOutOfMemoryError
 
 logger = logging.getLogger(__name__)

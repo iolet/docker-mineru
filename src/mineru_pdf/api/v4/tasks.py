@@ -10,10 +10,10 @@ from flask_pydantic.exceptions import ValidationError
 from sqlalchemy import select
 
 from ...models import Task, database
-from ...requests import TaskRequest
 from ...tasks.constants import Errors, Result, Status
 from ...tasks.miner import extract_pdf
 from ...utils.presenters import TaskSchema
+from ...utils.requests import TaskRequest
 
 logger = logging.getLogger(__name__)
 
