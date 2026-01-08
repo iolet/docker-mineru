@@ -4,16 +4,12 @@ from pathlib import Path
 from re import search as re_search
 from typing import Dict, Union
 
-import mineru.cli.common
 import torch
 
-from .fileguard import output_data_handler, output_dirs_handler
 from .requests import ParserEngines, ParserPrefers, TargetLanguages
 from ..tasks.exceptions import CUDANotAvailableError, GPUOutOfMemoryError
 
 logger = logging.getLogger(__name__)
-mineru.cli.common._process_output = output_data_handler
-mineru.cli.common.prepare_env = output_dirs_handler
 
 
 def magic_args(input_args: dict) -> dict:
@@ -78,11 +74,14 @@ def magic_file(input_file: Path, output_dir: Path,  **magic_kwargs: Dict[str, Un
             f'output dir {save_dir} does not exist or it is not a directory'
         )
 
+    if 'do_parse' not in globals():
+        from .mineru import do_parse, read_fn
+
     try:
-        mineru.cli.common.do_parse(
+        do_parse( # type: ignore
             output_dir=save_dir.resolve(),
             pdf_file_names=[ input_file.name ],
-            pdf_bytes_list=[ mineru.cli.common.read_fn(input_file) ],
+            pdf_bytes_list=[ read_fn(input_file) ], # type: ignore
             p_lang_list=magic_kwargs.get('lang_list'), # type: ignore
             backend=magic_kwargs.get('backend'), # type: ignore
             parse_method=magic_kwargs.get('parse_method'), # type: ignore

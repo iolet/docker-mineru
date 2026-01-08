@@ -177,7 +177,7 @@ def output_data_handler(
         f_dump_model_output: bool,
         f_make_md_mode: MakeMode,
         middle_json: dict,
-        model_output: dict,
+        model_output: Optional[dict],
         is_pipeline: bool
 ) -> None:
 
