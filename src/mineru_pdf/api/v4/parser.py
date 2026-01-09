@@ -1,14 +1,11 @@
-import json
 import logging
-import os
 import shutil
-import signal
 from pathlib import Path
 from tempfile import mkdtemp
 from typing import Any, Dict, Optional
 
 import arrow
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, g, jsonify, request
 from filename_sanitizer import sanitize_path_fragment
 from pydantic import ValidationError
 from werkzeug.datastructures import FileStorage
@@ -66,8 +63,8 @@ def file_parse():
     try:
         magic_file(input_file, cache_dir, **magic_kwargs) # type: ignore
     except GPUOutOfMemoryError as e:
+        g.is_gpu_oom = True
         logger.warning(e, exc_info=True)
-        os.kill(os.getpid(), signal.SIGTERM)
         return jsonify({
             'error': {
                 'code': Errors.GPU_OUT_OF_MEMORY,

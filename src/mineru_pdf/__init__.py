@@ -49,6 +49,10 @@ def create_app():
     from .api import handle_server_error
     app.register_error_handler(Exception, handle_server_error) # type: ignore
 
+    # connect subscribers of signals
+    from .subscribers import connect_subscribers
+    connect_subscribers(app)
+
     # integrate celery with flask
     from .utils.celeryq import integrate_celery
     integrate_celery(app)
