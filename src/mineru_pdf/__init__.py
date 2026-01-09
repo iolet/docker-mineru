@@ -34,7 +34,7 @@ def create_app():
     )
 
     # register commands
-    from .cli.parser import parse_file
+    from .cli.parse import parse_file
     from .cli.storage import storage
     app.cli.add_command(parse_file)
     app.cli.add_command(storage)
