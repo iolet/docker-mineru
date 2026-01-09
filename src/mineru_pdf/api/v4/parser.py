@@ -63,7 +63,7 @@ def file_parse():
     try:
         magic_file(input_file, cache_dir, **magic_kwargs) # type: ignore
     except GPUOutOfMemoryError as e:
-        g.is_gpu_oom = True
+        g.is_vram_full = True
         logger.warning(e, exc_info=True)
         return jsonify({
             'error': {

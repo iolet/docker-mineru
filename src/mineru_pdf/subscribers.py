@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def term_if_gpu_oom(sender: Flask, **extra):
-    if g.is_gpu_oom:
+    if 'is_vram_full' in g and g.is_vram_full:
         os.kill(os.getpid(), signal.SIGTERM)
 
 def connect_subscribers(app: Flask):
