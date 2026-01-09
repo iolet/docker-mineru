@@ -1,0 +1,8 @@
+*
+!src
+!.env.example
+!.flaskenv
+!entrypoint.sh
+!gunicorn.conf.py
+!mineru.json.template
+!requirements.txt
