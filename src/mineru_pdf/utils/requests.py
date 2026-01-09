@@ -20,21 +20,21 @@ def safe_fileid(value):
 def uploaded_or_throw(file: FileStorage):
 
     if not file.filename:
-        raise ValueError("File is required")
+        raise ValueError("file is required")
 
     name = file.filename
 
     ext = name.rsplit(".", 1)[-1].lower() if "." in name else ""
     if 'pdf' != ext:
-        raise ValueError(f"Unsupported file type: {ext}")
+        raise ValueError(f"unsupported file extension {ext}")
     if 'application/pdf' != file.mimetype:
-        raise ValueError(f"Unsupported mimetype: {file.mimetype}")
+        raise ValueError(f"unsupported mimetype: {file.mimetype}")
 
     size = getattr(file, 'content_length', None)
     if size is None:
-        raise ValueError("Unable to determine file size")
+        raise ValueError("unable to determine file size")
     if size <= 0:
-        raise ValueError("File is empty")
+        raise ValueError("file is empty")
 
 class ParserEngines(StrEnum):
     PIPELINE = 'pipeline'

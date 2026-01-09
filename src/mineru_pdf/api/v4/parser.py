@@ -35,8 +35,7 @@ def file_parse():
         return jsonify({
             'error': {
                 'code': Errors.SYS_INTERNAL_ERROR,
-                'message': 'passed unaccepted rules',
-                'target': [ 'file' ],
+                'message': 'file: unaccepted rules passed',
             }
         }), 500
 
@@ -58,7 +57,6 @@ def file_parse():
             'error': {
                 'code': getattr(e, 'code', Errors.SYS_INTERNAL_ERROR),
                 'message': f'{e}',
-                'target': [ 'file' ]
             }
         }), 400
 
@@ -116,22 +114,13 @@ def file_parse():
 @parser.errorhandler(ValidationError)
 def validate_failed(e: ValidationError):
 
-    items = getattr(e, 'form_params', None)
-    if items is None:
-        items = e.errors()
-
-    messages = {}
-    for item in items:
-        loc = item.get('loc', ())
-        key = loc[0] if loc else 'non_field_errors'
-        messages.setdefault(key, []).append(item.get('msg'))
-
-    messages = { k: v[0] if len(v) == 1 else v for k, v in messages.items() }
+    errors = []
+    for field in e.errors(): # type: ignore
+        errors.append(str(field['loc'][0]) + ': ' + field['msg'].lower())
 
     return jsonify({
         'error': {
             'code': 'ValidationError',
-            'message': messages,
-            'target': list(messages.keys())
+            'message': '; '.join(errors),
         },
     }), 422

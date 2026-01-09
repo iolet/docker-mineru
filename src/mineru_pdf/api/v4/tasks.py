@@ -89,12 +89,13 @@ def fetch(task_id: str):
 @tasks.errorhandler(ValidationError)
 def validate_failed(e: ValidationError):
 
-    messages = { field['loc'][0]: field['msg'] for field in e.body_params } # type: ignore
+    errors = []
+    for field in e.body_params: # type: ignore
+        errors.append(str(field['loc'][0]) + ': ' + field['msg'].lower())
 
     return jsonify({
         'error': {
             'code': 'ValidationError',
-            'message': json.dumps(messages),
-            'target': json.dumps(list(messages.keys()))
+            'message': '; '.join(errors),
         },
     }), 422
