@@ -12,5 +12,6 @@ gunicorn~=23.0.0
 marshmallow~=4.2.0
 mineru~=2.7.0
 python-dotenv~=1.2.1
+pytz>=2025.2
 requests~=2.32.5
 SQLAlchemy~=2.0.45
