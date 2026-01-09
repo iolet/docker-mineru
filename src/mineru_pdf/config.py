@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Union, Optional
 
 from dotenv import dotenv_values
+from filesizelib import FileSize
 from sqlalchemy import URL
 
 
@@ -37,7 +38,9 @@ class Default_(object):
 
     @property
     def MAX_CONTENT_LENGTH(self) -> int:
-        return 200 * 1024 * 1024
+        return int(FileSize(
+            self.env_pair.get('MAX_CONTENT_LENGTH') or '50MiB'
+        ).convert_to_bytes())
 
     ###
     ### Flask SQLAlchemy
