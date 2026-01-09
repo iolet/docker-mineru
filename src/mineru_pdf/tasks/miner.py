@@ -25,7 +25,7 @@ logger = get_task_logger(__name__)
 
 
 @shared_task(bind=True, max_retries=2, retry_backoff=True)
-def extract_pdf(self: Concrete, task_id: int) -> int:
+def mining_pdf(self: Concrete, task_id: int) -> int:
 
     # mark as start
     try:

@@ -11,7 +11,7 @@ from sqlalchemy import select
 
 from ...models import Task, database
 from ...tasks.constants import Errors, Result, Status
-from ...tasks.miner import extract_pdf
+from ...tasks.miner import mining_pdf
 from ...utils.presenters import TaskSchema
 from ...utils.requests import TaskRequest
 
@@ -47,7 +47,7 @@ def create(body: TaskRequest):
     database.session.commit()
 
     # delivery to queue
-    extract_pdf.delay(task.id) # type: ignore
+    mining_pdf.delay(task.id) # type: ignore
 
     return jsonify({
         'data': {
@@ -71,7 +71,6 @@ def fetch(task_id: str):
             'error': {
                 'code': 'NotFound',
                 'message': 'task not found, please review task_id and try again',
-                'target': 'task_id'
             },
         }), 404
 
