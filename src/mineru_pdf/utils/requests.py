@@ -17,25 +17,6 @@ def safe_fileid(value):
 
     return value
 
-def uploaded_or_throw(file: FileStorage):
-
-    if not file.filename:
-        raise ValueError("file is required")
-
-    name = file.filename
-
-    ext = name.rsplit(".", 1)[-1].lower() if "." in name else ""
-    if 'pdf' != ext:
-        raise ValueError(f"unsupported file extension {ext}")
-    if 'application/pdf' != file.mimetype:
-        raise ValueError(f"unsupported mimetype: {file.mimetype}")
-
-    size = getattr(file, 'content_length', None)
-    if size is None:
-        raise ValueError("unable to determine file size")
-    if size <= 0:
-        raise ValueError("file is empty")
-
 class ParserEngines(StrEnum):
     PIPELINE = 'pipeline'
     VLM_AUTO_ENGINE = 'vlm-auto-engine'
@@ -90,7 +71,22 @@ class FileParseForm(BaseModel):
         if not isinstance(v, FileStorage):
             raise TypeError("file must be a FileStorage")
 
-        uploaded_or_throw(v)
+        if not v.filename:
+            raise ValueError("file is required")
+
+        name = v.filename
+
+        ext = name.rsplit(".", 1)[-1].lower() if "." in name else ""
+        if 'pdf' != ext:
+            raise ValueError(f"unsupported file extension {ext}")
+        if 'application/pdf' != v.mimetype:
+            raise ValueError(f"unsupported mimetype: {v.mimetype}")
+
+        size = getattr(v, 'content_length', None)
+        if size is None:
+            raise ValueError("unable to determine file size")
+        if size <= 0:
+            raise ValueError("file is empty")
 
         return v
 
