@@ -23,8 +23,8 @@
         }
     },
     "models-dir": {
-        "pipeline": "${MODEL__PDF_EXTRACT_KIT_1dot0}",
-        "vlm": "${MODEL__MINERU2dot5_2509_1dot2B}"
+        "pipeline": "${MINERU_MODEL_PIPELINE}",
+        "vlm": "${MINERU_MODEL_VLM}"
     },
     "config_version": "1.3.1"
 }

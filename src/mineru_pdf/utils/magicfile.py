@@ -87,6 +87,7 @@ def magic_file(input_file: Path, output_dir: Path,  **magic_kwargs: Dict[str, Un
             parse_method=magic_kwargs.get('parse_method'), # type: ignore
             formula_enable=magic_kwargs.get('formula_enabled'), # type: ignore
             table_enable=magic_kwargs.get('table_enabled'), # type: ignore
+            server_url=None,
             f_draw_layout_bbox=magic_kwargs.get('enable_review', False), # type: ignore
             f_dump_orig_pdf=magic_kwargs.get('enable_review', False) # type: ignore
         )

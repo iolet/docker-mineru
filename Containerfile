@@ -10,8 +10,9 @@ ARG PIP_INDEX=https://pypi.org
 ARG GOSU_TAG=1.19
 
 # Models location
-ENV MODEL__PDF_EXTRACT_KIT_1dot0=/app/models/OpenDataLab--PDF-Extract-Kit-1.0
-ENV MODEL__MINERU2dot5_2509_1dot2B=/app/models/OpenDataLab--MinerU2.5-2509-1.2B
+ENV MINERU_MODEL_SOURCE=local
+ENV MINERU_MODEL_PIPELINE=/app/models/opendatalab--PDF-Extract-Kit-1.0
+ENV MINERU_MODEL_VLM=/app/models/opendatalab--MinerU2.5-2509-1.2B
 
 # Install required packages
 RUN set -eux; \
