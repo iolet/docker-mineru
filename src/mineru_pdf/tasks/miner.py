@@ -87,25 +87,25 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
-    if not 'magic_args' in globals():
-        from ..utils.magicfile import magic_args
-
-    try:
-        fine_args = magic_args( # type: ignore
-            json.loads(task.finetune_args)
-        )
-    except json.decoder.JSONDecodeError as e1:
-        logger.warning(e1, exc_info=True)
-        fine_args = {}
-    except TypeError as e2:
-        logger.warning(e2, exc_info=True)
-        fine_args = {}
-
     if not 'magic_file' in globals():
-        from ..utils.magicfile import magic_file
+        from ..utils.magicfile import magic_args, magic_file
 
     try:
-        magic_file(pdf_file, workdir, **fine_args) # type: ignore
+        finetune_args = json.loads(task.finetune_args)
+    except (json.decoder.JSONDecodeError, TypeError) as e:
+        logger.warning(e, exc_info=True)
+        finetune_args = {}
+
+    try:
+        magic_kwargs = magic_args({ **finetune_args, # type: ignore
+            'vllm_endpoint': current_app.config.get('VLLM_ENDPOINT')
+        })
+    except ValueError as e:
+        logger.warning(e, exc_info=True)
+        magic_kwargs = {}
+
+    try:
+        magic_file(pdf_file, workdir, **magic_kwargs) # type: ignore
     except Exception as e:
         logger.exception(e)
         task.status = Status.TERMINATED

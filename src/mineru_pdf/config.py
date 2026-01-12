@@ -134,3 +134,11 @@ class Default_(object):
     @property
     def FLASK_PYDANTIC_VALIDATION_ERROR_RAISE(self) -> bool:
         return True
+
+    ###
+    ### External Services
+    ###
+
+    @property
+    def VLLM_ENDPOINT(self) -> Optional[str]:
+        return self.env_pair.get('VLLM_ENDPOINT')
