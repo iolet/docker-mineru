@@ -5,8 +5,9 @@ import logging
 import zipfile
 from base64 import b64encode
 from datetime import datetime
+from math import ceil
 from pathlib import Path
-from typing import Optional
+from typing import Dict, List, Optional, Union
 
 import arrow
 import filetype
@@ -19,6 +20,7 @@ from mineru.utils.enum_class import MakeMode
 from pypdfium2 import PdfDocument, PdfPage, PdfiumError, raw as pdfium2_raw
 from pypdfium2.internal.consts import ErrorToStr
 
+from .coords import bbox_pt2px, bbox_scale, pt2px
 from ..models import Task
 from ..tasks.exceptions import (
     FileEncryptionFoundError, FileMIMEUnsupportedError,
@@ -153,6 +155,50 @@ def pickup_images(image_dir: Path) -> dict:
     return {
         locate_image(image) : encode_image(image) for image in image_dir.glob('*.jpg')
     }
+
+def fix_content_list(content_list: List[Dict], page_size: tuple[int, int]):
+
+    for item in content_list:
+        if 'bbox' in item:
+            item['bbox'] = bbox_scale(
+                item['bbox'],
+                int(ceil(pt2px(page_size[0]))),
+                int(ceil(pt2px(page_size[1])))
+            )
+
+    return content_list
+
+def fix_middle_json(middle: Dict[str, Union[str, List[Dict]]]):
+
+    pdf_info: List[Dict] = middle['pdf_info'] # type: ignore
+
+    def fix_blocks(blocks: List[Dict]):
+
+        for block in blocks:
+            if 'bbox' in block:
+                block['bbox'] = bbox_pt2px(block['bbox'])
+            if 'lines' in block:
+                for line in block['lines']:
+                    if 'bbox' in line:
+                        line['bbox'] = bbox_pt2px(line['bbox'])
+                    if 'spans' in line:
+                        for span in line['spans']:
+                            if 'bbox' in span:
+                                span['bbox'] = bbox_pt2px(span['bbox'])
+        return blocks
+
+    for page in pdf_info:
+        if 'preproc_blocks' in page:
+            page['preproc_blocks'] = fix_blocks(page['preproc_blocks'])
+        if 'discarded_blocks' in page:
+            page['discarded_blocks'] = fix_blocks(page['discarded_blocks'])
+        if 'para_blocks' in page:
+            page['para_blocks'] = fix_blocks(page['para_blocks'])
+
+    return middle
+
+def fix_model_json(model: List[Dict]):
+    pass
 
 def output_dirs_handler(output_dir, pdf_file_name, parse_method):
     txt_dir = Path(output_dir)
