@@ -1,13 +1,17 @@
 from math import ceil
-from typing import List, Union
+from typing import Union
 
-def pt2px(pt: Union[float, int]) -> float:
+type Axis = Union[float, int]
+type BBoxAxes = tuple[Axis, Axis, Axis, Axis]
+type PageSize = tuple[int, int]
+
+def pt2px(pt: Axis) -> float:
     return round(float(pt) * 4 / 3, 5)
 
-def scale(px: int, peak: int) -> float:
-    return round(px * peak / 1000, 5)
+def scale(px: int, length: int) -> float:
+    return round(px * length / 1000, 5)
 
-def bbox_pt2px(bbox: List[Union[float, int]]):
+def bbox_pt2px(bbox: BBoxAxes):
 
     if len(bbox) != 4:
         raise ValueError('bbox format invalid, only support 4 value list')
@@ -21,14 +25,14 @@ def bbox_pt2px(bbox: List[Union[float, int]]):
         to_px(x1, True), to_px(y1, True)
     ]
 
-def bbox_scale(bbox: List[int], w: int, h: int):
+def bbox_scale(bbox: BBoxAxes, page: PageSize):
 
     if len(bbox) != 4:
         raise ValueError('bbox format invalid, only support 4 value list')
 
     x0, y0, x1, y1 = bbox
 
-    scale_x = lambda x: int(scale(x, w))
-    scale_y = lambda y: int(ceil(scale(y, h)))
+    scale_x = lambda x: int(scale(x, page[0]))
+    scale_y = lambda y: int(ceil(scale(y, page[1])))
 
     return [ scale_x(x0), scale_y(y0), scale_x(x1), scale_y(y1) ]

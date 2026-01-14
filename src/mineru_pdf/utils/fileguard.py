@@ -5,7 +5,6 @@ import logging
 import zipfile
 from base64 import b64encode
 from datetime import datetime
-from math import ceil
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -20,7 +19,7 @@ from mineru.utils.enum_class import MakeMode
 from pypdfium2 import PdfDocument, PdfPage, PdfiumError, raw as pdfium2_raw
 from pypdfium2.internal.consts import ErrorToStr
 
-from .coords import bbox_pt2px, bbox_scale, pt2px
+from .coords import PageSize, bbox_pt2px, bbox_scale
 from ..models import Task
 from ..tasks.exceptions import (
     FileEncryptionFoundError, FileMIMEUnsupportedError,
@@ -156,15 +155,11 @@ def pickup_images(image_dir: Path) -> dict:
         locate_image(image) : encode_image(image) for image in image_dir.glob('*.jpg')
     }
 
-def fix_content_list(content_list: List[Dict], page_size: tuple[int, int]):
+def fix_content_list(content_list: List[Dict], page_sizes: Dict[int, PageSize]):
 
-    for item in content_list:
+    for idx, item in enumerate(content_list):
         if 'bbox' in item:
-            item['bbox'] = bbox_scale(
-                item['bbox'],
-                int(ceil(pt2px(page_size[0]))),
-                int(ceil(pt2px(page_size[1])))
-            )
+            item['bbox'] = bbox_scale(tuple(item['bbox']), page_sizes[idx])
 
     return content_list
 
@@ -176,15 +171,15 @@ def fix_middle_json(middle: Dict[str, Union[str, List[Dict]]]):
 
         for block in blocks:
             if 'bbox' in block:
-                block['bbox'] = bbox_pt2px(block['bbox'])
+                block['bbox'] = bbox_pt2px(tuple(block['bbox']))
             if 'lines' in block:
                 for line in block['lines']:
                     if 'bbox' in line:
-                        line['bbox'] = bbox_pt2px(line['bbox'])
+                        line['bbox'] = bbox_pt2px(tuple(line['bbox']))
                     if 'spans' in line:
                         for span in line['spans']:
                             if 'bbox' in span:
-                                span['bbox'] = bbox_pt2px(span['bbox'])
+                                span['bbox'] = bbox_pt2px(tuple(span['bbox']))
         return blocks
 
     for page in pdf_info:
@@ -236,22 +231,26 @@ def output_data_handler(
 
     # for content list
     make_func = pipeline_union_make if is_pipeline else vlm_union_make
+    page_sizes = { page['page_idx']: tuple(page['page_size']) for page in middle_json['pdf_info'] }
     if is_pipeline:
         content_list = make_func(pdf_info, MakeMode.CONTENT_LIST, image_dir) # type: ignore
         md_writer.write_string(
             f"content_list.json",
-            json.dumps(content_list, ensure_ascii=False, indent=2),
+            json.dumps(fix_content_list(content_list, page_sizes), # type: ignore
+                       ensure_ascii=False, indent=2),
         )
     else:
         content_list_v2 = make_func(pdf_info, MakeMode.CONTENT_LIST_V2, image_dir) # type: ignore
         md_writer.write_string(
             f"content_list_v2.json",
-            json.dumps(content_list_v2, ensure_ascii=False, indent=2),
+            json.dumps(fix_content_list(content_list_v2, page_sizes), # type: ignore
+                       ensure_ascii=False, indent=2),
         )
 
     # for middle
     md_writer.write_string(
-        f"middle.json", json.dumps(middle_json, ensure_ascii=False, indent=2)
+        f"middle.json", json.dumps(
+            fix_middle_json(middle_json), ensure_ascii=False, indent=2)
     )
 
     # for model
