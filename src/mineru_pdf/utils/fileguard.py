@@ -157,9 +157,9 @@ def pickup_images(image_dir: Path) -> dict:
 
 def fix_content_list(content_list: List[Dict], page_sizes: Dict[int, PageSize]):
 
-    for idx, item in enumerate(content_list):
+    for item in content_list:
         if 'bbox' in item:
-            item['bbox'] = bbox_scale(tuple(item['bbox']), page_sizes[idx])
+            item['bbox'] = bbox_scale(tuple(item['bbox']), page_sizes[item['page_idx']])
 
     return content_list
 
