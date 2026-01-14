@@ -8,8 +8,8 @@ type PageSize = tuple[int, int]
 def pt2px(pt: Axis) -> float:
     return round(float(pt) * 4 / 3, 5)
 
-def scale(px: int, length: int) -> float:
-    return round(px * length / 1000, 5)
+def scale(px: int, peak: int) -> float:
+    return round(px * peak / 1000, 5)
 
 def bbox_pt2px(bbox: BBoxAxes):
 
