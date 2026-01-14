@@ -1,3 +1,4 @@
+import copy
 import os
 import hashlib
 import json
@@ -157,15 +158,18 @@ def pickup_images(image_dir: Path) -> dict:
 
 def fix_content_list(content_list: List[Dict], page_sizes: Dict[int, PageSize]):
 
-    for item in content_list:
+    items = copy.deepcopy(content_list)
+
+    for item in items:
         if 'bbox' in item:
             item['bbox'] = bbox_scale(tuple(item['bbox']), page_sizes[item['page_idx']])
 
-    return content_list
+    return items
 
 def fix_middle_json(middle: Dict[str, Union[str, List[Dict]]]):
 
-    pdf_info: List[Dict] = middle['pdf_info'] # type: ignore
+    target = copy.deepcopy(middle)
+    pdf_info: List[Dict] = target['pdf_info'] # type: ignore
 
     def fix_blocks(blocks: List[Dict]):
 
@@ -190,7 +194,7 @@ def fix_middle_json(middle: Dict[str, Union[str, List[Dict]]]):
         if 'para_blocks' in page:
             page['para_blocks'] = fix_blocks(page['para_blocks'])
 
-    return middle
+    return target
 
 def fix_model_json(model: List[Dict]):
     pass
@@ -223,6 +227,7 @@ def output_data_handler(
 ) -> None:
 
     image_dir = str(os.path.basename(local_image_dir))
+    is_debug = f_draw_layout_bbox or f_draw_span_bbox
 
     # for content
     make_func = pipeline_union_make if is_pipeline else vlm_union_make
@@ -237,29 +242,44 @@ def output_data_handler(
         md_writer.write_string(
             f"content_list.json",
             json.dumps(fix_content_list(content_list, page_sizes), # type: ignore
-                       ensure_ascii=False, indent=2),
+                       ensure_ascii=False, indent=2)
         )
+        if is_debug:
+            md_writer.write_string(
+                f"content_list.raw.json",
+                json.dumps(content_list, ensure_ascii=False, indent=2)
+            )
     else:
         content_list_v2 = make_func(pdf_info, MakeMode.CONTENT_LIST_V2, image_dir) # type: ignore
         md_writer.write_string(
             f"content_list_v2.json",
             json.dumps(fix_content_list(content_list_v2, page_sizes), # type: ignore
-                       ensure_ascii=False, indent=2),
+                       ensure_ascii=False, indent=2)
         )
+        if is_debug:
+            md_writer.write_string(
+                f"content_list_v2.raw.json",
+                json.dumps(content_list_v2, ensure_ascii=False, indent=2)
+            )
 
     # for middle
     md_writer.write_string(
         f"middle.json", json.dumps(
             fix_middle_json(middle_json), ensure_ascii=False, indent=2)
     )
+    if is_debug:
+        md_writer.write_string(
+            f"middle.raw.json",
+            json.dumps(middle_json, ensure_ascii=False, indent=2)
+        )
 
     # for model
     md_writer.write_string(
-        f"model.json", json.dumps(model_output, ensure_ascii=False, indent=2)
+        f"model.raw.json", json.dumps(model_output, ensure_ascii=False, indent=2)
     )
 
     # for debug
-    if f_draw_layout_bbox or f_draw_span_bbox:
+    if is_debug:
         draw_layout_bbox(pdf_info, pdf_bytes, local_md_dir, f"layout.pdf")
         draw_span_bbox(pdf_info, pdf_bytes, local_md_dir, f"spans.pdf")
         draw_line_sort_bbox(pdf_info, pdf_bytes, local_md_dir, f"line_sort.pdf")
