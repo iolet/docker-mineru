@@ -98,11 +98,15 @@ RUN set -eux; \
     rm -rf ~/.cache; \
     rm -rf ~/.config;
 
+# Setup workdir
 WORKDIR /app
 
+# Persist directories
 VOLUME [ "/app/instance", "/app/models" ]
 
+# Expose port for wsgi and vllm
 EXPOSE 9471/tcp
+EXPOSE 30000/tcp
 
 ENTRYPOINT [ "/app/entrypoint.sh" ]
 
