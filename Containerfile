@@ -1,4 +1,4 @@
-FROM docker.io/nvidia/cuda:12.8.1-base-ubuntu22.04
+FROM docker.io/nvidia/cuda:12.8.1-base-ubuntu24.04
 
 # Maybe we want mirror for package
 ARG APT_ARCHIVES=http://archive.ubuntu.com
