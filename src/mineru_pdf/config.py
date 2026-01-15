@@ -72,8 +72,13 @@ class Default_(object):
 
         db: Optional[str] = self.env_pair.get('DB_DATABASE')
 
-        if not db and 'sqlite' in self.DB_DRIVER:
-            return str(self.instance_path.joinpath('db.sqlite3'))
+        if 'sqlite' in self.DB_DRIVER:
+
+            if db is None or len(db.strip()) < 1:
+                db = 'db.sqlite'
+
+            if not Path(db).is_absolute():
+                db = str(self.instance_path.joinpath(db))
 
         return db
 
