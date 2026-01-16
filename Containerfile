@@ -1,18 +1,16 @@
-FROM docker.io/nvidia/cuda:12.8.1-base-ubuntu24.04
+# Defined a base nvidia/cuda image
+ARG CUDA_TAG=12.8.1-base-ubuntu24.04
+
+# We need get verified binary
+FROM docker.io/nvidia/cuda:${CUDA_TAG} AS builder
 
 # Maybe we want mirror for package
 ARG APT_ARCHIVES=http://archive.ubuntu.com
 ARG APT_SECURITY=http://security.ubuntu.com
 ARG GH_ENDPOINT=https://github.com
-ARG PIP_INDEX=https://pypi.org
 
 # Some tools version
 ARG GOSU_TAG=1.19
-
-# Models location
-ENV MINERU_MODEL_SOURCE=local
-ENV MINERU_MODEL_PIPELINE=/app/models/opendatalab--PDF-Extract-Kit-1.0
-ENV MINERU_MODEL_VLM=/app/models/opendatalab--MinerU2.5-2509-1.2B
 
 # Install required packages
 RUN set -eux; \
@@ -23,11 +21,7 @@ RUN set -eux; \
     \
     export DEBIAN_FRONTEND=noninteractive; \
     apt update -y; \
-    apt install \
-        libgl1 libglib2.0-0 \
-        python3 python3-venv \
-        curl gettext-base gpg tree jq \
-        -y; \
+    apt install curl gpg -y; \
     apt clean && rm -rf /var/lib/apt/lists/*; \
     \
     if [ "${APT_ARCHIVES}" != "http://archive.ubuntu.com" ]; then \
@@ -49,7 +43,50 @@ RUN set -eux; \
     cp gosu /usr/local/bin/; \
     chmod +x /usr/local/bin/gosu; \
     \
-    rm -rf /tmp/*;
+    find /tmp -type d -path '/tmp/**' -print0 | xargs -0 rm -rf;
+
+# Ensure argument is available in next stage
+ARG CUDA_TAG
+
+# Start build a fresh image
+FROM docker.io/nvidia/cuda:${CUDA_TAG}
+
+# Maybe we want mirror for package (referenced)
+ARG APT_ARCHIVES
+ARG APT_SECURITY
+ARG PIP_INDEX=https://pypi.org
+
+# todo We need some custom build packages
+#ARG PIP_STAND
+
+# Models location
+ENV MINERU_MODEL_SOURCE=local
+ENV MINERU_MODEL_PIPELINE=/app/models/opendatalab--PDF-Extract-Kit-1.0
+ENV MINERU_MODEL_VLM=/app/models/opendatalab--MinerU2.5-2509-1.2B
+
+# Copy verified gosu binary
+COPY --from=builder /usr/local/bin/gosu /usr/local/bin/gosu
+
+# Install required packages
+RUN set -eux; \
+    \
+    if [ "${APT_ARCHIVES}" != "http://archive.ubuntu.com" ]; then \
+        sed -i "s@http://archive.ubuntu.com@${APT_ARCHIVES}@g" /etc/apt/sources.list; \
+    fi; \
+    \
+    export DEBIAN_FRONTEND=noninteractive; \
+    apt update -y; \
+    apt install \
+        cuda-nvcc-12-8 \
+        gettext-base \
+        libgl1 libglib2.0-0 \
+        python3 python3-venv \
+        -y; \
+    apt clean && rm -rf /var/lib/apt/lists/*; \
+    \
+    if [ "${APT_ARCHIVES}" != "http://archive.ubuntu.com" ]; then \
+        sed -i "s@${APT_ARCHIVES}@http://archive.ubuntu.com@g" /etc/apt/sources.list; \
+    fi;
 
 # Added rootless user and group
 RUN set -eux; \
@@ -96,7 +133,8 @@ RUN set -eux; \
         $trusted_host; \
     \
     rm -rf ~/.cache; \
-    rm -rf ~/.config;
+    rm -rf ~/.config; \
+    find /tmp -type d -path '/tmp/**' -print0 | xargs -0 rm -rf;
 
 # Setup workdir
 WORKDIR /app
