@@ -56,9 +56,6 @@ ARG APT_ARCHIVES
 ARG APT_SECURITY
 ARG PIP_INDEX=https://pypi.org
 
-# todo We need some custom build packages
-#ARG PIP_STAND
-
 # Models location
 ENV MINERU_MODEL_SOURCE=local
 ENV MINERU_MODEL_PIPELINE=/app/models/opendatalab--PDF-Extract-Kit-1.0
@@ -79,8 +76,9 @@ RUN set -eux; \
     apt install \
         cuda-nvcc-12-8 \
         gettext-base \
+        libcurand-12-8 libcurand-dev-12-8 \
         libgl1 libglib2.0-0 \
-        python3 python3-venv \
+        python3 python3-dev python3-venv \
         -y; \
     apt clean && rm -rf /var/lib/apt/lists/*; \
     \
