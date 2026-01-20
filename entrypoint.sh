@@ -37,6 +37,11 @@ if [ -d "${nv_prefix}/cublas/lib" ] && [ ! -L "${nv_prefix}/cublas/lib/libcublas
 fi
 cd $workdir
 
+# Redirect cache to volume by default
+if [ -z "$VLLM_CACHE_ROOT" ]; then
+    export VLLM_CACHE_ROOT=/app/instance/cache/vllm
+fi
+
 # Ensure target correct
 if [ "prompt" = "${1}" ]; then
     echo "missing argument <app>, available:"
@@ -74,11 +79,6 @@ fi
 if [ ! -d "${MINERU_MODEL_VLM}" ]; then
     echo "MINERU_MODEL_VLM (${MINERU_MODEL_VLM}) not exists"
     exit 3
-fi
-
-# Redirect cache to volume by default
-if [ -z "$VLLM_CACHE_ROOT" ]; then
-    export VLLM_CACHE_ROOT=/app/instance/cache/vllm
 fi
 
 # Migrate database and link directory
