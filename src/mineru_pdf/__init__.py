@@ -18,7 +18,10 @@ def create_app():
 
     # setup configuration
     from .config import Default_
-    app.config.from_object(Default_(app.instance_path))
+    app.config.from_object(Default_(
+        instance_path=app.instance_path,
+        env_file=Path.cwd().joinpath('.env')
+    ))
 
     # init essential components
     from .services import database, migrate
