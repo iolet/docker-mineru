@@ -2,9 +2,11 @@ __version__ = '0.0.1'
 
 def create_app():
 
+    from os import environ
+    from pathlib import Path
+
     # create flask instance
     from flask import Flask
-    from os import environ
     app = Flask(
         import_name=__name__,
         instance_path=environ.get('FLASK_INSTANCE_DIR', default=None),
@@ -17,12 +19,6 @@ def create_app():
     # setup configuration
     from .config import Default_
     app.config.from_object(Default_(app.instance_path))
-
-    from dotenv import dotenv_values
-    from pathlib import Path
-    env_file = Path('.').resolve().joinpath('.env')
-    if env_file.exists() and env_file.is_file():
-        app.config.from_mapping(dotenv_values(env_file))
 
     # init essential components
     from .services import database, migrate
