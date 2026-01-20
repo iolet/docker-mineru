@@ -76,6 +76,11 @@ if [ ! -d "${MINERU_MODEL_VLM}" ]; then
     exit 3
 fi
 
+# Redirect cache to volume by default
+if [ -z "$VLLM_CACHE_ROOT" ]; then
+    export VLLM_CACHE_ROOT=/app/instance/cache/vllm
+fi
+
 # Migrate database and link directory
 . .venv/bin/activate
 flask db upgrade
