@@ -1,5 +1,6 @@
 arrow~=1.4.0
 celery~=5.6.2
+celery[redis]~=5.6.2
 concurrent-log-handler~=0.9.25
 filename-sanitizer~=0.1.0
 filetype~=1.2.0
