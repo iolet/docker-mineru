@@ -14,9 +14,18 @@ if [ ! -f "/app/mineru.json" ]; then
     envsubst < mineru.json.template > mineru.json
 fi
 
-# Workaround for cudnn and cublas not found
+# Ensure nvidia headers and libraries available
 nv_prefix=/app/.venv/lib/python3.12/site-packages/nvidia
+if [ -d "$nv_prefix" ]; then
+    headers=$(find $nv_prefix -type d -path "**/include" | tr '\n' ':' | sed 's/:$//')
+    [ -z "$headers" ] || export CPATH="$headers"
+    unset headers
+    libraries=$(find $nv_prefix -type d -path "**/lib" | tr '\n' ':' | sed 's/:$//')
+    [ -z "$libraries" ] || export LD_LIBRARY_PATH="$libraries"
+    unset libraries
+fi
 
+# Workaround for cudnn and cublas not found
 workdir=$(pwd)
 if [ -d "${nv_prefix}/cudnn/lib" ] && [ ! -L "${nv_prefix}/cudnn/lib/libcudnn.so" ]; then
     cd "${nv_prefix}/cudnn/lib"; \
@@ -28,10 +37,6 @@ if [ -d "${nv_prefix}/cublas/lib" ] && [ ! -L "${nv_prefix}/cublas/lib/libcublas
 fi
 cd $workdir
 
-if [ -d "${nv_prefix}/cudnn/lib" ] || [ -d "${nv_prefix}/cublas/lib" ]; then
-    export LD_LIBRARY_PATH=${nv_prefix}/cudnn/lib:${nv_prefix}/cublas/lib
-fi
-
 # Ensure target correct
 if [ "prompt" = "${1}" ]; then
     echo "missing argument <app>, available:"
@@ -42,12 +47,13 @@ if [ "prompt" = "${1}" ]; then
 elif [ "serve" = "${1}" ]; then
     set -- /app/.venv/bin/gunicorn --config gunicorn.conf.py
 elif [ "queue" = "${1}" ]; then
+    # todo get soft-time-limit from time-limit
     set -- /app/.venv/bin/celery \
         --app src.mineru_pdf.celery.app \
         worker \
-        --concurrency 1 \
-        --time-limit 1800 \
-        --soft-time-limit 1500 \
+        --concurrency ${QUEUE_CONCURRENCY:-"1"} \
+        --time-limit ${QUEUE_TIMEOUT:-"1800"} \
+        --soft-time-limit ${QUEUE_TIMEOUT_THRESHOLD:-"1500"} \
         --optimization fair \
         --prefetch-multiplier 1 \
         --max-tasks-per-child 10 \
