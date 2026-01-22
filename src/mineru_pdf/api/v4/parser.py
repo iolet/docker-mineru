@@ -13,7 +13,7 @@ from werkzeug.datastructures import FileStorage
 from ...tasks.constants import Errors
 from ...tasks.exceptions import GPUOutOfMemoryError
 from ...utils.fileguard import file_check, load_json_file, read_text_file, pickup_images
-from ...utils.requests import FileParseForm
+from ...utils.requests import FileParseForm, ParserEngines
 
 parser: Blueprint = Blueprint('parser', __name__)
 logger = logging.getLogger(__name__)
@@ -114,9 +114,15 @@ def file_parse():
         )
 
     if form.return_content_list:
-        data['content_list'] = load_json_file(
-            cache_dir.joinpath('content_list.scaled.json' if form.apply_scaled else 'content_list.json')
-        )
+
+        if ParserEngines.PIPELINE == form.parser_engine:
+            data['content_list'] = load_json_file(
+                cache_dir.joinpath('content_list.scaled.json' if form.apply_scaled else 'content_list.json')
+            )
+        else:
+            data['content_list_v2'] = load_json_file(
+                cache_dir.joinpath('content_list_v2.scaled.json' if form.apply_scaled else 'content_list_v2.json')
+            )
 
     if form.return_images:
         data['images'] = pickup_images(
