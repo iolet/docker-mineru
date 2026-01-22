@@ -60,17 +60,15 @@ def file_parse():
     if not 'magic_file' in globals():
         from ...utils.magicfile import magic_args, magic_file
 
-    magic_kwargs: Dict[str, Union[str, bool, None]] = magic_args(dict(filter( # type: ignore
-        lambda item: item[1] is not None, {
-            'parser_engine': form.parser_engine,
-            'parser_prefer': form.parser_prefer,
-            'target_language': form.target_language,
-            'enable_table': form.enable_table,
-            'enable_formula': form.enable_formula,
-            'apply_scaled': form.apply_scaled,
-            'vllm_endpoint': current_app.config.get('VLLM_ENDPOINT'),
-        }.items()
-    )))
+    magic_kwargs: Dict[str, Union[str, bool, None]] = magic_args({ # type: ignore
+        'parser_engine': form.parser_engine,
+        'parser_prefer': form.parser_prefer,
+        'target_language': form.target_language,
+        'enable_table': form.enable_table,
+        'enable_formula': form.enable_formula,
+        'apply_scaled': form.apply_scaled,
+        'vllm_endpoint': current_app.config.get('VLLM_ENDPOINT'),
+    })
 
     try:
         magic_file(input_file, cache_dir, **magic_kwargs) # type: ignore

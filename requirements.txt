@@ -19,6 +19,7 @@ torch>=2.7.1,<2.9
 pytz>=2025.2
 requests~=2.32.5
 SQLAlchemy~=2.0.45
+toolz~=1.1.0
 # for Compute Capability between 8.0 (included) and 9.0 (included) on amd64
 vllm>=0.10.1.1,<0.11
 # for torch optimized performance
