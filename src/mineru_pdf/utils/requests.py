@@ -60,6 +60,7 @@ class FileParseForm(BaseModel):
     target_language: Annotated[TargetLanguages, Field(max_length=32, default=None)]
     enable_table: Annotated[bool, Field(default=None)]
     enable_formula: Annotated[bool, Field(default=None)]
+    apply_scaled: Annotated[bool, Field(default=False)]
 
     return_md: Annotated[bool, Field(default=True)]
     return_info: Annotated[bool, Field(default=True)]
@@ -93,4 +94,5 @@ class TaskRequest(BaseModel):
     target_language: Annotated[TargetLanguages, Field(max_length=32, default=None)]
     enable_table: Annotated[bool, Field(default=None)]
     enable_formula: Annotated[bool, Field(default=None)]
+    apply_scaled: Annotated[bool, Field(default=None)]
     callback_url: Annotated[HttpUrl, Field(default=None)]

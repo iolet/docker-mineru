@@ -71,6 +71,13 @@ def magic_args(input_args: dict) -> Dict[str, Union[str, bool, None]]:
             )
         output_args['server_url'] = vllm_endpoint.geturl()
 
+    input_args.setdefault('apply_scaled', False)
+    if not isinstance(input_args['apply_scaled'], bool):
+        raise ValueError(
+            'invalid type for apply_scaled, only supported True and False'
+        )
+    output_args['apply_scaled_output'] = input_args['apply_scaled']
+
     logger.info(f'output args {output_args}')
 
     return output_args
@@ -98,7 +105,8 @@ def magic_file(input_file: Path, output_dir: Path,  **magic_kwargs: Dict[str, Un
             table_enable=magic_kwargs.get('table_enabled'), # type: ignore
             server_url=magic_kwargs.get('server_url'),
             f_draw_layout_bbox=magic_kwargs.get('enable_review', False), # type: ignore
-            f_dump_orig_pdf=magic_kwargs.get('enable_review', False) # type: ignore
+            f_dump_orig_pdf=magic_kwargs.get('enable_review', False), # type: ignore
+            apply_scaled_output=magic_kwargs.get('apply_scaled_output', False)
         )
     except (MemoryError, torch.OutOfMemoryError) as e:
         raise GPUOutOfMemoryError('GPU out of memory') from e

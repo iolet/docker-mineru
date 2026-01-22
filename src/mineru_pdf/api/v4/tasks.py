@@ -34,6 +34,7 @@ def create(body: TaskRequest):
             'target_language': body.target_language,
             'enable_formula': body.enable_formula,
             'enable_table': body.enable_table,
+            'apply_scaled': body.apply_scaled,
         }),
         callback_url=str(body.callback_url), # type: ignore
         status=Status.CREATED, # type: ignore

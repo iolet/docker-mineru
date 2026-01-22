@@ -67,6 +67,7 @@ def file_parse():
             'target_language': form.target_language,
             'enable_table': form.enable_table,
             'enable_formula': form.enable_formula,
+            'apply_scaled': form.apply_scaled,
             'vllm_endpoint': current_app.config.get('VLLM_ENDPOINT'),
         }.items()
     )))
@@ -95,9 +96,12 @@ def file_parse():
         'md_content': read_text_file(cache_dir.joinpath('content.md'))
     }
 
+    if form.apply_scaled:
+        data['scaled'] = [ 'content_list', 'layout' ]
+
     if form.return_layout:
         data['layout'] = load_json_file(
-            cache_dir.joinpath('model.json')
+            cache_dir.joinpath('model.scaled.json' if form.apply_scaled else 'model.json')
         )
 
     if form.return_info:
@@ -107,7 +111,7 @@ def file_parse():
 
     if form.return_content_list:
         data['content_list'] = load_json_file(
-            cache_dir.joinpath('content_list.json')
+            cache_dir.joinpath('content_list.scaled.json' if form.apply_scaled else 'content_list.json')
         )
 
     if form.return_images:

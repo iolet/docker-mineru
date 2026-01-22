@@ -182,7 +182,10 @@ def fix_content_list(content_list: List[Dict], page_sizes: Dict[int, PageSize]):
 
     return items
 
-def fix_model_json(model_json: List[Union[Dict, List[Dict]]], page_sizes: Dict[int, PageSize]):
+def fix_model_json(model_json: Optional[List[Union[Dict, List[Dict]]]], page_sizes: Dict[int, PageSize]):
+
+    if model_json is None:
+        return model_json
 
     items = copy.deepcopy(model_json)
 
@@ -250,8 +253,9 @@ def output_data_handler(
         f_dump_model_output: bool,
         f_make_md_mode: MakeMode,
         middle_json: dict,
-        model_output: Optional[dict],
-        is_pipeline: bool
+        model_output: Optional[List[Union[Dict, List[Dict]]]],
+        is_pipeline: bool,
+        apply_scaled_output: bool,
 ) -> None:
 
     image_dir = str(os.path.basename(local_image_dir))
@@ -263,16 +267,29 @@ def output_data_handler(
 
     # for content list
     make_func = pipeline_union_make if is_pipeline else vlm_union_make
+    page_sizes = { page['page_idx']: tuple(page['page_size']) for page in middle_json['pdf_info'] }
     if is_pipeline:
-        content_list = make_func(pdf_info, MakeMode.CONTENT_LIST, image_dir) # type: ignore
+        content_list: List[Dict] = make_func(pdf_info, MakeMode.CONTENT_LIST, image_dir) # type: ignore
         md_writer.write_string(
             f"content_list.json", json.dumps(content_list, ensure_ascii=False, indent=2)
         )
+        if apply_scaled_output:
+            md_writer.write_string(
+                f"content_list.scaled.json", json.dumps(
+                    fix_content_list(content_list, page_sizes),
+                    ensure_ascii=False, indent=2)
+            )
     else:
-        content_list_v2 = make_func(pdf_info, MakeMode.CONTENT_LIST_V2, image_dir) # type: ignore
+        content_list_v2: List[Dict] = make_func(pdf_info, MakeMode.CONTENT_LIST_V2, image_dir) # type: ignore
         md_writer.write_string(
             f"content_list_v2.json", json.dumps(content_list_v2, ensure_ascii=False, indent=2)
         )
+        if apply_scaled_output:
+            md_writer.write_string(
+                f"content_list_v2.scaled.json", json.dumps(
+                    fix_content_list(content_list_v2, page_sizes),
+                    ensure_ascii=False, indent=2)
+            )
 
     # for middle
     md_writer.write_string(
@@ -283,6 +300,12 @@ def output_data_handler(
     md_writer.write_string(
         f"model.json", json.dumps(model_output, ensure_ascii=False, indent=2)
     )
+    if apply_scaled_output:
+        md_writer.write_string(
+            f"model.scaled.json", json.dumps(
+                fix_model_json(model_output, page_sizes),
+                ensure_ascii=False, indent=2)
+        )
 
     # for debug
     if f_draw_layout_bbox or f_draw_span_bbox:

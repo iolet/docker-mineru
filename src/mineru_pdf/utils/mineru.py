@@ -89,7 +89,8 @@ def _process_output(
         f_make_md_mode,
         middle_json,
         model_output=None,
-        is_pipeline=True
+        is_pipeline=True,
+        **kwargs
 ):
     output_data_handler(
         pdf_info,
@@ -108,7 +109,8 @@ def _process_output(
         f_make_md_mode,
         middle_json,
         model_output,
-        is_pipeline
+        is_pipeline,
+        kwargs.get('apply_scaled_output', False)
     )
 
     logger.info(f"local output dir is {local_md_dir}")
@@ -129,6 +131,7 @@ def _process_pipeline(
         f_dump_orig_pdf,
         f_dump_content_list,
         f_make_md_mode,
+        **kwargs
 ):
     """处理pipeline后端逻辑"""
     from mineru.backend.pipeline.model_json_to_middle_json import result_to_middle_json as pipeline_result_to_middle_json
@@ -164,7 +167,7 @@ def _process_pipeline(
             pdf_info, pdf_bytes, pdf_file_name, local_md_dir, local_image_dir,
             md_writer, f_draw_layout_bbox, f_draw_span_bbox, f_dump_orig_pdf,
             f_dump_md, f_dump_content_list, f_dump_middle_json, f_dump_model_output,
-            f_make_md_mode, middle_json, model_json, is_pipeline=True
+            f_make_md_mode, middle_json, model_json, is_pipeline=True, **kwargs
         )
 
 def _process_vlm(
@@ -207,7 +210,7 @@ def _process_vlm(
             pdf_info, pdf_bytes, pdf_file_name, local_md_dir, local_image_dir,
             md_writer, f_draw_layout_bbox, f_draw_span_bbox, f_dump_orig_pdf,
             f_dump_md, f_dump_content_list, f_dump_middle_json, f_dump_model_output,
-            f_make_md_mode, middle_json, infer_result, is_pipeline=False
+            f_make_md_mode, middle_json, infer_result, is_pipeline=False, **kwargs
         )
 
 def _process_hybrid(
@@ -261,7 +264,7 @@ def _process_hybrid(
             pdf_info, pdf_bytes, pdf_file_name, local_md_dir, local_image_dir,
             md_writer, f_draw_layout_bbox, f_draw_span_bbox, f_dump_orig_pdf,
             f_dump_md, f_dump_content_list, f_dump_middle_json, f_dump_model_output,
-            f_make_md_mode, middle_json, infer_result, is_pipeline=False
+            f_make_md_mode, middle_json, infer_result, is_pipeline=False, **kwargs
         )
 
 def do_parse(
@@ -294,7 +297,7 @@ def do_parse(
             output_dir, pdf_file_names, pdf_bytes_list, p_lang_list,
             parse_method, formula_enable, table_enable,
             f_draw_layout_bbox, f_draw_span_bbox, f_dump_md, f_dump_middle_json,
-            f_dump_model_output, f_dump_orig_pdf, f_dump_content_list, f_make_md_mode
+            f_dump_model_output, f_dump_orig_pdf, f_dump_content_list, f_make_md_mode, **kwargs
         )
     else:
         if backend.startswith("vlm-"):
