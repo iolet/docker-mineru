@@ -5,25 +5,9 @@ type Axis = Union[float, int]
 type BBoxAxes = tuple[Axis, Axis, Axis, Axis]
 type PageSize = tuple[int, int]
 
-def pt2px(pt: Axis) -> float:
-    return round(float(pt) * 4 / 3, 5)
 
-def scale(pt: int, peak: int) -> float:
-    return round(pt * peak / 1000, 5)
-
-def bbox_pt2px(bbox: BBoxAxes):
-
-    if len(bbox) != 4:
-        raise ValueError('bbox format invalid, only support 4 value list')
-
-    x0, y0, x1, y1 = bbox
-
-    to_px = lambda pt, up: int(ceil(pt2px(pt)) if up else pt2px(pt))
-
-    return [
-        to_px(x0, False), to_px(y0, False),
-        to_px(x1, True), to_px(y1, True)
-    ]
+def scale(pt: int, pk: int) -> float:
+    return round(pt * pk / 1000, 5)
 
 def bbox_scale(bbox: BBoxAxes, page: PageSize):
 

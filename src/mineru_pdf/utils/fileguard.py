@@ -20,7 +20,7 @@ from mineru.utils.enum_class import MakeMode
 from pypdfium2 import PdfDocument, PdfPage, PdfiumError, raw as pdfium2_raw
 from pypdfium2.internal.consts import ErrorToStr
 
-from .coords import PageSize, bbox_pt2px, bbox_scale
+from .coords import PageSize, bbox_scale
 from ..models import Task
 from ..tasks.exceptions import (
     FileEncryptionFoundError, FileMIMEUnsupportedError,
@@ -162,36 +162,6 @@ def fix_content_list(content_list: List[Dict], page_sizes: Dict[int, PageSize]):
             item['bbox'] = bbox_scale(tuple(item['bbox']), page_sizes[item['page_idx']])
 
     return items
-
-def fix_middle_json(middle: Dict[str, Union[str, List[Dict]]]):
-
-    target = copy.deepcopy(middle)
-    pdf_info: List[Dict] = target['pdf_info'] # type: ignore
-
-    def fix_blocks(blocks: List[Dict]):
-
-        for block in blocks:
-            if 'bbox' in block:
-                block['bbox'] = bbox_pt2px(tuple(block['bbox']))
-            if 'lines' in block:
-                for line in block['lines']:
-                    if 'bbox' in line:
-                        line['bbox'] = bbox_pt2px(tuple(line['bbox']))
-                    if 'spans' in line:
-                        for span in line['spans']:
-                            if 'bbox' in span:
-                                span['bbox'] = bbox_pt2px(tuple(span['bbox']))
-        return blocks
-
-    for page in pdf_info:
-        if 'preproc_blocks' in page:
-            page['preproc_blocks'] = fix_blocks(page['preproc_blocks'])
-        if 'discarded_blocks' in page:
-            page['discarded_blocks'] = fix_blocks(page['discarded_blocks'])
-        if 'para_blocks' in page:
-            page['para_blocks'] = fix_blocks(page['para_blocks'])
-
-    return target
 
 def fix_model_json(model: List[Dict]):
     pass
