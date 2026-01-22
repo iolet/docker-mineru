@@ -87,14 +87,6 @@ def file_parse():
             current_app.config.get('TIMEZONE')
         ).shift(seconds=200).datetime
         return r, 503
-    except Exception as e:
-        logger.exception(e)
-        return jsonify({
-            'error': {
-                'code': getattr(e, 'code', Errors.SYS_INTERNAL_ERROR),
-                'message': f'{e}'
-            }
-        }), 500
 
     data: Dict[str, Any] = {
         'md_content': read_text_file(cache_dir.joinpath('content.md'))
