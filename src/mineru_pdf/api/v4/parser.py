@@ -77,12 +77,16 @@ def file_parse():
     except GPUOutOfMemoryError as e:
         g.is_vram_full = True
         logger.warning(e, exc_info=True)
-        return jsonify({
+        r = jsonify({
             'error': {
                 'code': Errors.GPU_OUT_OF_MEMORY,
                 'message': f'{e}'
             }
-        }), 500
+        })
+        r.retry_after = arrow.now(
+            current_app.config.get('TIMEZONE')
+        ).shift(seconds=200).datetime
+        return r, 503
     except Exception as e:
         logger.exception(e)
         return jsonify({
