@@ -12,7 +12,7 @@ from werkzeug.datastructures import FileStorage
 
 from ...tasks.constants import Errors
 from ...tasks.exceptions import GPUOutOfMemoryError
-from ...utils.fileguard import file_check, receive_json, receive_text, pickup_images
+from ...utils.fileguard import file_check, load_json_file, read_text_file, pickup_images
 from ...utils.requests import FileParseForm
 
 parser: Blueprint = Blueprint('parser', __name__)
@@ -92,21 +92,21 @@ def file_parse():
         }), 500
 
     data: Dict[str, Any] = {
-        'md_content': receive_text(cache_dir.joinpath('content.md'))
+        'md_content': read_text_file(cache_dir.joinpath('content.md'))
     }
 
     if form.return_layout:
-        data['layout'] = receive_json(
+        data['layout'] = load_json_file(
             cache_dir.joinpath('model.json')
         )
 
     if form.return_info:
-        data['info'] = receive_json(
+        data['info'] = load_json_file(
             cache_dir.joinpath('middle.json')
         )
 
     if form.return_content_list:
-        data['content_list'] = receive_json(
+        data['content_list'] = load_json_file(
             cache_dir.joinpath('content_list.json')
         )
 

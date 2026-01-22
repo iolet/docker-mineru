@@ -25,22 +25,22 @@ tasks: Blueprint = Blueprint('tasks', __name__)
 def create(body: TaskRequest):
 
     task: Task = Task(
-        uuid=str(uuid4()),
-        file_id=body.file_id,
-        file_url=str(body.file_url),
-        finetune_args=json.dumps({
+        uuid=str(uuid4()), # type: ignore
+        file_id=body.file_id, # type: ignore
+        file_url=str(body.file_url), # type: ignore
+        finetune_args=json.dumps({ # type: ignore
             'parser_engine': body.parser_engine,
             'parser_prefer': body.parser_prefer,
             'target_language': body.target_language,
             'enable_formula': body.enable_formula,
             'enable_table': body.enable_table,
         }),
-        callback_url=str(body.callback_url),
-        status=Status.CREATED,
-        result=Result.NONE_,
-        errors=Errors.NONE_,
-        created_at=arrow.now(current_app.config.get('TIMEZONE')).datetime,
-        updated_at=arrow.now(current_app.config.get('TIMEZONE')).datetime
+        callback_url=str(body.callback_url), # type: ignore
+        status=Status.CREATED, # type: ignore
+        result=Result.NONE_, # type: ignore
+        errors=Errors.NONE_, # type: ignore
+        created_at=arrow.now(current_app.config.get('TIMEZONE')).datetime, # type: ignore
+        updated_at=arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     )
 
     database.session.add(task)

@@ -137,23 +137,20 @@ def file_check(input_file: Path) -> None:
     finally:
         document.close()
 
-def receive_json(file: Path):
-    return json.loads(receive_text(file) or '{}')
+def load_json_file(file: Path):
+    return json.loads(read_text_file(file) or '{}')
 
-def receive_text(file: Path) -> Optional[str]:
+def read_text_file(file: Path) -> Optional[str]:
     with file.open('r') as f:
         return f.read()
 
-def locate_image(image: Path) -> str:
-    return image.name
-
-def encode_image(image: Path) -> Optional[str]:
+def _b64_imagefile(image: Path) -> Optional[str]:
     with image.open('rb') as f:
         return f'data:image/jpeg;base64,{b64encode(f.read()).decode()}'
 
 def pickup_images(image_dir: Path) -> dict:
     return {
-        locate_image(image) : encode_image(image) for image in image_dir.glob('*.jpg')
+        image.name : _b64_imagefile(image) for image in image_dir.glob('*.jpg')
     }
 
 def fix_content_list(content_list: List[Dict], page_sizes: Dict[int, PageSize]):
@@ -227,7 +224,6 @@ def output_data_handler(
 ) -> None:
 
     image_dir = str(os.path.basename(local_image_dir))
-    is_debug = f_draw_layout_bbox or f_draw_span_bbox
 
     # for content
     make_func = pipeline_union_make if is_pipeline else vlm_union_make
@@ -236,50 +232,29 @@ def output_data_handler(
 
     # for content list
     make_func = pipeline_union_make if is_pipeline else vlm_union_make
-    page_sizes = { page['page_idx']: tuple(page['page_size']) for page in middle_json['pdf_info'] }
     if is_pipeline:
         content_list = make_func(pdf_info, MakeMode.CONTENT_LIST, image_dir) # type: ignore
         md_writer.write_string(
-            f"content_list.json",
-            json.dumps(fix_content_list(content_list, page_sizes), # type: ignore
-                       ensure_ascii=False, indent=2)
+            f"content_list.json", json.dumps(content_list, ensure_ascii=False, indent=2)
         )
-        if is_debug:
-            md_writer.write_string(
-                f"content_list.raw.json",
-                json.dumps(content_list, ensure_ascii=False, indent=2)
-            )
     else:
         content_list_v2 = make_func(pdf_info, MakeMode.CONTENT_LIST_V2, image_dir) # type: ignore
         md_writer.write_string(
-            f"content_list_v2.json",
-            json.dumps(fix_content_list(content_list_v2, page_sizes), # type: ignore
-                       ensure_ascii=False, indent=2)
+            f"content_list_v2.json", json.dumps(content_list_v2, ensure_ascii=False, indent=2)
         )
-        if is_debug:
-            md_writer.write_string(
-                f"content_list_v2.raw.json",
-                json.dumps(content_list_v2, ensure_ascii=False, indent=2)
-            )
 
     # for middle
     md_writer.write_string(
-        f"middle.json", json.dumps(
-            fix_middle_json(middle_json), ensure_ascii=False, indent=2)
+        f"middle.json", json.dumps(middle_json, ensure_ascii=False, indent=2)
     )
-    if is_debug:
-        md_writer.write_string(
-            f"middle.raw.json",
-            json.dumps(middle_json, ensure_ascii=False, indent=2)
-        )
 
     # for model
     md_writer.write_string(
-        f"model.raw.json", json.dumps(model_output, ensure_ascii=False, indent=2)
+        f"model.json", json.dumps(model_output, ensure_ascii=False, indent=2)
     )
 
     # for debug
-    if is_debug:
+    if f_draw_layout_bbox or f_draw_span_bbox:
         draw_layout_bbox(pdf_info, pdf_bytes, local_md_dir, f"layout.pdf")
         draw_span_bbox(pdf_info, pdf_bytes, local_md_dir, f"spans.pdf")
         draw_line_sort_bbox(pdf_info, pdf_bytes, local_md_dir, f"line_sort.pdf")
