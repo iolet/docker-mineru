@@ -22,6 +22,6 @@ def handle_server_error(e: Exception):
     return jsonify({
         'error': {
             'code': Errors.SYS_INTERNAL_ERROR,
-            'message': str(e)
+            'message': f'{e.__class__} {e}'
         }
     }), 500
