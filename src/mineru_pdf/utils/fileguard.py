@@ -6,6 +6,7 @@ import logging
 import zipfile
 from base64 import b64encode
 from datetime import datetime
+from math import ceil
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -20,12 +21,15 @@ from mineru.utils.enum_class import MakeMode
 from pypdfium2 import PdfDocument, PdfPage, PdfiumError, raw as pdfium2_raw
 from pypdfium2.internal.consts import ErrorToStr
 
-from .coords import PageSize, bbox_scale
 from ..models import Task
 from ..tasks.exceptions import (
     FileEncryptionFoundError, FileMIMEUnsupportedError,
     FilePageRatioInvalidError,
 )
+
+type Axis = Union[float, int]
+type BBoxAxes = tuple[Axis, Axis, Axis, Axis]
+type PageSize = tuple[int, int]
 
 logger = logging.getLogger(__name__)
 
@@ -155,6 +159,21 @@ def pickup_images(image_dir: Path) -> dict:
 
 def fix_content_list(content_list: List[Dict], page_sizes: Dict[int, PageSize]):
 
+    def scale(pt: int, pk: int) -> float:
+        return round(pt * pk / 1000, 5)
+
+    def bbox_scale(bbox: BBoxAxes, page: PageSize):
+
+        if len(bbox) != 4:
+            raise ValueError('bbox format invalid, only support 4 value list')
+
+        x0, y0, x1, y1 = bbox
+
+        scale_x = lambda x: int(scale(x, page[0]))
+        scale_y = lambda y: int(ceil(scale(y, page[1])))
+
+        return [ scale_x(x0), scale_y(y0), scale_x(x1), scale_y(y1) ]
+
     items = copy.deepcopy(content_list)
 
     for item in items:
@@ -163,8 +182,50 @@ def fix_content_list(content_list: List[Dict], page_sizes: Dict[int, PageSize]):
 
     return items
 
-def fix_model_json(model: List[Dict]):
-    pass
+def fix_model_json(model_json: List[Union[Dict, List[Dict]]], page_sizes: Dict[int, PageSize]):
+
+    items = copy.deepcopy(model_json)
+
+    for idx, item in enumerate(items):
+
+        # for pipeline output
+        if isinstance(item, dict):
+
+            ori = page_sizes[item['page_info']['page_no']]
+            wid = item['page_info']['width']
+            hei = item['page_info']['height']
+
+            factors = (round(wid / ori[0], 5), round(hei / ori[1], 5))
+
+            def oct_scale(poly: List[float], factors: tuple[float, float]) -> List[float]:
+                return [
+                    round(poly[0] / factors[0], 5), round(poly[1] / factors[1], 5),
+                    round(poly[2] / factors[0], 5), round(poly[3] / factors[1], 5),
+                    round(poly[4] / factors[0], 5), round(poly[5] / factors[1], 5),
+                    round(poly[6] / factors[0], 5), round(poly[7] / factors[1], 5),
+                ]
+
+            for det in item['layout_dets']:
+                det['poly'] = oct_scale(det['poly'], factors)
+
+        # for vlm output
+        elif isinstance(item, list):
+
+            page_size = page_sizes[idx]
+
+            def quad_scale(bbox: List[float], page_size) -> List[float]:
+                return [
+                    round(bbox[0] * page_size[0], 5), round(bbox[1] * page_size[1], 5),
+                    round(bbox[2] * page_size[0], 5), round(bbox[3] * page_size[1], 5),
+                ]
+
+            for pice in item:
+                pice['bbox'] = quad_scale(pice['bbox'], page_size)
+
+        else:
+            raise ValueError(f'expected dict or list, {type(item)} given')
+
+    return items
 
 def output_dirs_handler(output_dir, pdf_file_name, parse_method):
     txt_dir = Path(output_dir)
