@@ -37,9 +37,12 @@ if [ -d "${nv_prefix}/cublas/lib" ] && [ ! -L "${nv_prefix}/cublas/lib/libcublas
 fi
 cd $workdir
 
-# Redirect cache to volume by default
-if [ -z "$VLLM_CACHE_ROOT" ]; then
-    export VLLM_CACHE_ROOT=/app/instance/cache/vllm
+# Redirect config and cache to volume by default
+if [ -z "$XDG_CONFIG_HOME" ]; then
+    export XDG_CONFIG_HOME=/app/instance/config
+fi
+if [ -z "$XDG_CACHE_HOME" ]; then
+    export XDG_CACHE_HOME=/app/instance/cache
 fi
 
 # Ensure target correct
