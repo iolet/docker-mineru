@@ -1,0 +1,11 @@
+--- a/.venv/lib/python3.13/site-packages/mineru/utils/pdf_image_tools.py	2026-01-23 17:51:59.336280842 +0800
++++ b/.venv/lib/python3.13/site-packages/mineru/utils/pdf_image_tools.py	2026-01-23 12:18:04.135358550 +0800
+@@ -74,7 +74,7 @@
+         TimeoutError: 当转换超时时抛出
+     """
+     pdf_doc = pdfium.PdfDocument(pdf_bytes)
+-    if is_windows_environment():
++    if is_windows_environment() or True:
+         # Windows 环境下不使用多进程
+         return load_images_from_pdf_core(
+             pdf_bytes,

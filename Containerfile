@@ -100,7 +100,7 @@ RUN set -eux; \
 # Copy project files
 COPY --chown=mineru:mineru . /app/
 
-# Install dependencies packages
+# Install dependencies packages and apply patches
 RUN set -eux; \
     \
     export PYTHONUNBUFFERED=1; \
@@ -129,6 +129,12 @@ RUN set -eux; \
         --no-color \
         --disable-pip-version-check \
         $trusted_host; \
+    \
+    py_ver=$(find .venv/lib -type d -name 'python3\.??' | tail -n 1 | xargs basename | sed 's/\./\\\./'); \
+    for pfile in $(ls -1 -S patches/*.patch); do \
+        sed "s/python3\.[0-9]\+/$py_ver/g" "$pfile" | patch --strip 1 --unified; \
+    done; \
+    unset py_ver; \
     \
     rm -rf ~/.cache; \
     rm -rf ~/.config; \
