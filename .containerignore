@@ -1,5 +1,6 @@
 *
 !src
+!patches
 !.env.example
 !.flaskenv
 !entrypoint.sh
