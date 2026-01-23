@@ -65,7 +65,7 @@ elif [ "queue" = "${1}" ]; then
         --optimization fair \
         --prefetch-multiplier 1 \
         --max-tasks-per-child 10 \
-        --loglevel DEBUG
+        --loglevel ${QUEUE_LOGLEVEL:-"INFO"}
 elif [ "vllm" = "${1}" ]; then
     set -- /app/.venv/bin/mineru-vllm-server \
         --port ${VLLM_PORT:-"30000"} \
