@@ -50,6 +50,14 @@ class Default_(object):
             self.env_pair.get('MAX_CONTENT_LENGTH') or '50MiB'
         ).convert_to_bytes())
 
+    @property
+    def WORKDIR_KEEP_DAYS(self) -> int:
+        return int(self.env_pair.get('WORKDIR_KEEP_DAYS') or '16')
+
+    @property
+    def ARCHIVE_KEEP_DAYS(self) -> int:
+        return int(self.env_pair.get('ARCHIVE_KEEP_DAYS') or '720')
+
     ###
     ### Flask SQLAlchemy
     ###

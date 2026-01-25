@@ -38,7 +38,7 @@ def file_parse():
 
     days: str = arrow.now(current_app.config.get('TIMEZONE')).format('YYYY-MM-DD')
 
-    cache_dir: Path = Path(mkdtemp(prefix=f'uploaded.{days}.', dir=str(
+    cache_dir: Path = Path(mkdtemp(prefix=f'uploaded.{days}_', dir=str(
         Path(current_app.instance_path).joinpath('cache').resolve()
     )))
     input_file: Path = cache_dir.joinpath(

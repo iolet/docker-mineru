@@ -1,4 +1,5 @@
 import json
+import re
 import shutil
 from pathlib import Path
 from typing import Optional
@@ -150,3 +151,45 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
         logger.warning(e, exc_info=True)
 
     return 0
+
+def start_of_day(moment: arrow.Arrow) -> arrow.Arrow:
+    return moment.replace(hour=0, minute=0, second=0, microsecond=0)
+
+@shared_task
+def prune_archives(self: Concrete):
+
+    timezone: str = current_app.config.get('TIMEZONE') # type: ignore
+    archives_dir: Path = Path(current_app.instance_path).joinpath('archives')
+    keep_days: int = abs(current_app.config.get('ARCHIVE_KEEP_DAYS')) # type: ignore
+    oldest_day: arrow.Arrow = start_of_day(arrow.now(tz=timezone).shift(day=-keep_days))
+
+    for chunks in archives_dir.iterdir():
+        target_day = start_of_day(arrow.get(chunks.name, 'YYYY-MM-DD', tzinfo=timezone))
+        if target_day < oldest_day:
+            shutil.rmtree(chunks)
+
+@shared_task
+def remove_workdir(self: Concrete):
+
+    timezone: str = current_app.config.get('TIMEZONE') # type: ignore
+    cache_dir: Path = Path(current_app.instance_path).joinpath('cache')
+    keep_days: int = abs(current_app.config.get('WORKDIR_KEEP_DAYS')) # type: ignore
+    oldest_day: arrow.Arrow = start_of_day(arrow.now(tz=timezone).shift(day=-keep_days))
+
+    for target in cache_dir.iterdir():
+
+        target_day = None
+
+        if target.name.startswith('uploaded.'):
+            matches = re.search(r'(?<=uploaded\.)(?P<day>\d{4}-\d{2}-\d{2})', target.name, re.ASCII)
+            if matches is not None:
+                target_day = start_of_day(arrow.get(matches.group('day'), 'YYYY-MM-DD', tzinfo=timezone))
+
+        if target.name.startswith('taskid.'):
+            matches = re.search(r'(?<=moment\.)(?P<moment>\d{12})', target.name, re.ASCII)
+            if matches is not None:
+                target_day = start_of_day(arrow.get(matches.group('moment'), 'YYYYMMDDHHmm', tzinfo=timezone))
+
+        if target_day is not None:
+            if target_day < oldest_day:
+                shutil.rmtree(target)
