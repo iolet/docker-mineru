@@ -51,10 +51,8 @@ def create(body: TaskRequest):
     mining_pdf.delay(task.id) # type: ignore
 
     return jsonify({
-        'data': {
-            'task_id': task.uuid,
-        }
-    }), 200
+        'task_id': task.uuid,
+    })
 
 
 @tasks.get('/tasks/<string:task_id>')
@@ -82,9 +80,7 @@ def fetch(task_id: str):
         if 'location' in data['tarball']:
             data['tarball']['location'] = host + data['tarball']['location']
 
-    return jsonify({
-        'data': data
-    }), 200
+    return jsonify(data)
 
 @tasks.errorhandler(ValidationError)
 def validate_failed(e: ValidationError):
