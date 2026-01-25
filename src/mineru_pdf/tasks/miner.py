@@ -167,6 +167,7 @@ def prune_archives(self: Concrete):
         target_day = start_of_day(arrow.get(chunks.name, 'YYYY-MM-DD', tzinfo=timezone))
         if target_day < oldest_day:
             shutil.rmtree(chunks)
+            logger.info(f'pruned archives {chunks}')
 
 @shared_task
 def remove_workdir(self: Concrete):
@@ -193,3 +194,4 @@ def remove_workdir(self: Concrete):
         if target_day is not None:
             if target_day < oldest_day:
                 shutil.rmtree(target)
+                logger.info(f'removed workdir {target}')
