@@ -37,6 +37,14 @@ class Default_(object):
         return self.env_pair.get('TIMEZONE') or 'Asia/Shanghai'
 
     @property
+    def PDF_MAX_PAGE(self) -> str:
+        return self.env_pair.get('PDF_MAX_PAGE') or '2000'
+
+    @property
+    def PDF_MAX_SIZE(self) -> str:
+        return self.env_pair.get('PDF_MAX_SIZE') or '200MiB'
+
+    @property
     def MAX_CONTENT_LENGTH(self) -> int:
         return int(FileSize(
             self.env_pair.get('MAX_CONTENT_LENGTH') or '50MiB'

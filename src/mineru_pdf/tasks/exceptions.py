@@ -42,3 +42,19 @@ class FileMIMEUnsupportedError(ValueError):
 
     def __str__(self):
         return f'{self.code}: {super().__str__()}'
+
+class FileTooLargeSizeError(ValueError):
+    """File too large size"""
+
+    code = Errors.FILE_TOO_LARGE_SIZE
+
+    def __str__(self):
+        return f'{self.code}: {super().__str__()}'
+
+class FileTooManyPagesError(ValueError):
+    """File too many pages"""
+
+    code = Errors.FILE_TOO_MANY_PAGES
+
+    def __str__(self):
+        return f'{self.code}: {super().__str__()}'

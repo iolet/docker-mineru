@@ -14,6 +14,7 @@ import arrow
 import filetype
 from dateutil import tz
 from flask import current_app
+from filesizelib import FileSize, StorageUnit
 from mineru.backend.pipeline.pipeline_middle_json_mkcontent import union_make as pipeline_union_make
 from mineru.backend.vlm.vlm_middle_json_mkcontent import union_make as vlm_union_make
 from mineru.utils.draw_bbox import draw_layout_bbox, draw_span_bbox, draw_line_sort_bbox
@@ -24,6 +25,7 @@ from pypdfium2.internal.consts import ErrorToStr
 from ..models import Task
 from ..tasks.exceptions import (
     FileEncryptionFoundError, FileMIMEUnsupportedError,
+    FileTooLargeSizeError, FileTooManyPagesError,
     FilePageRatioInvalidError,
 )
 
@@ -105,10 +107,20 @@ def file_check(input_file: Path) -> None:
     if not input_file.is_file():
         raise ValueError('not a regular file')
 
+    # only support pdf file
     mime = filetype.guess_extension(input_file)
-
     if 'pdf' != mime:
         raise FileMIMEUnsupportedError(f'mine type {mime} is unsupported')
+
+    # file should not be too large
+    actual_size = FileSize(input_file.stat().st_size, StorageUnit.BYTES)
+    limits_size = FileSize(current_app.config.get('PDF_MAX_SIZE') or '0')
+    if actual_size > limits_size:
+        raise FileTooLargeSizeError(
+            f'expected filesize is equal or less then '
+            f'{int(limits_size.convert_to_bytes())} bytes, '
+            f'{int(actual_size.convert_to_bytes())} bytes given'
+        )
 
     # file should not have any encrypted
     try:
@@ -118,6 +130,15 @@ def file_check(input_file: Path) -> None:
             raise FileEncryptionFoundError('unsupported encrypted file')
         else:
             raise e
+
+    # file should not be too many pages
+    maximum_pages = int(current_app.config.get('PDF_MAX_PAGE') or '0')
+    actual_pages = len(document)
+    if actual_pages > maximum_pages:
+        raise FileTooManyPagesError(
+            f'expected pages is equal or less then {maximum_pages}, '
+            f'{actual_pages} given'
+        )
 
     # page should be common, avoid too height or width
     try:
