@@ -65,7 +65,13 @@ elif [ "queue" = "${1}" ]; then
         --optimization fair \
         --prefetch-multiplier 1 \
         --max-tasks-per-child 10 \
-        --loglevel ${QUEUE_LOGLEVEL:-"INFO"}
+        --loglevel ${LOGLEVEL:-"INFO"}
+elif [ "schedule" = "${1}" ]; then
+    set -- /app/.venv/bin/celery \
+        --app src.mineru_pdf.celery.app \
+        beat \
+        --schedule /app/instance/beat-stat.db \
+        --loglevel ${LOGLEVEL:-"INFO"}
 elif [ "vllm" = "${1}" ]; then
     set -- /app/.venv/bin/mineru-vllm-server \
         --port ${VLLM_PORT:-"30000"} \

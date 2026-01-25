@@ -98,7 +98,7 @@ logconfig_dict = {
 }
 
 # set log level to info
-loglevel = 'info'
+loglevel = os.getenv('LOGLEVEL', 'INFO').lower()
 
 # does not redirect access log to syslog
 disable_redirect_access_to_syslog = True
