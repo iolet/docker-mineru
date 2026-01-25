@@ -39,6 +39,10 @@ def integrate_celery(app: Flask) -> Celery:
     config['broker_connection_retry_on_startup'] = True
     config['worker_hijack_root_logger'] = False
 
+    config['timezone'] = app.config.get('TIMEZONE') or 'UTC'
+    if 'UTC' not in config['timezone']:
+        config['enable_utc'] = False
+
     celery_app.config_from_object(config)
     celery_app.set_default()
 
