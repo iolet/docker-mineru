@@ -50,6 +50,7 @@ if [ "prompt" = "${1}" ]; then
     echo "missing argument <app>, available:"
     echo "    serve  for api endpoint serve"
     echo "    queue  for background task"
+    echo "    sched  for periodic task"
     echo "    vllm   for model serve"
     exit 1
 elif [ "serve" = "${1}" ]; then
@@ -66,11 +67,11 @@ elif [ "queue" = "${1}" ]; then
         --prefetch-multiplier 1 \
         --max-tasks-per-child 10 \
         --loglevel ${LOGLEVEL:-"INFO"}
-elif [ "schedule" = "${1}" ]; then
+elif [ "sched" = "${1}" ]; then
     set -- /app/.venv/bin/celery \
         --app src.mineru_pdf.celery.app \
         beat \
-        --schedule /app/instance/beat-stat.db \
+        --schedule /app/instance/sched.db \
         --loglevel ${LOGLEVEL:-"INFO"}
 elif [ "vllm" = "${1}" ]; then
     set -- /app/.venv/bin/mineru-vllm-server \
