@@ -156,26 +156,39 @@ def start_of_day(moment: arrow.Arrow) -> arrow.Arrow:
     return moment.replace(hour=0, minute=0, second=0, microsecond=0)
 
 @shared_task
-def prune_archives(self: Concrete):
+def prune_archives():
 
     timezone: str = current_app.config.get('TIMEZONE') # type: ignore
     archives_dir: Path = Path(current_app.instance_path).joinpath('archives')
     keep_days: int = abs(current_app.config.get('ARCHIVE_KEEP_DAYS')) # type: ignore
-    oldest_day: arrow.Arrow = start_of_day(arrow.now(tz=timezone).shift(day=-keep_days))
+
+    if 0 == keep_days:
+        logger.debug('ARCHIVE_KEEP_DAYS is 0, skipped')
+        return
+
+    oldest_day: arrow.Arrow = start_of_day(arrow.now(tz=timezone).shift(days=-keep_days))
 
     for chunks in archives_dir.iterdir():
-        target_day = start_of_day(arrow.get(chunks.name, 'YYYY-MM-DD', tzinfo=timezone))
+        try:
+            target_day = start_of_day(arrow.get(chunks.name, 'YYYY-MM-DD', tzinfo=timezone))
+        except arrow.ParserError:
+            continue
         if target_day < oldest_day:
             shutil.rmtree(chunks)
             logger.info(f'pruned archives {chunks}')
 
 @shared_task
-def remove_workdir(self: Concrete):
+def remove_workdir():
 
     timezone: str = current_app.config.get('TIMEZONE') # type: ignore
     cache_dir: Path = Path(current_app.instance_path).joinpath('cache')
     keep_days: int = abs(current_app.config.get('WORKDIR_KEEP_DAYS')) # type: ignore
-    oldest_day: arrow.Arrow = start_of_day(arrow.now(tz=timezone).shift(day=-keep_days))
+
+    if 0 == keep_days:
+        logger.debug('WORKDIR_KEEP_DAYS is 0, skipped')
+        return
+
+    oldest_day: arrow.Arrow = start_of_day(arrow.now(tz=timezone).shift(days=-keep_days))
 
     for target in cache_dir.iterdir():
 

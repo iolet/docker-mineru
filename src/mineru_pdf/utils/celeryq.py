@@ -29,10 +29,10 @@ def integrate_celery(app: Flask) -> Celery:
 
     options: dict = config.get('result_backend_transport_options', {})
 
-    if options.get('global_keyprefix', '').isspace():
+    if options.get('global_keyprefix', '').strip():
         config.update({
             'result_backend_transport_options': {
-                'global_keyprefix': app.config['APP_NAME'] + '_celery-result_'
+                'global_keyprefix': app.config['APP_NAME'].strip() + '__'
             }
         })
 
