@@ -31,7 +31,7 @@ def file_parse():
         logger.fatal('file exists but passed validation rules')
         return jsonify({
             'error': {
-                'code': ExtraErrorCodes.INTERNAL_ERROR.value,
+                'code': ExtraErrorCodes.INTERNAL_ERROR,
                 'message': 'file: unaccepted rules passed',
             }
         }), 500
@@ -52,7 +52,7 @@ def file_parse():
     except Exception as e:
         return jsonify({
             'error': {
-                'code': getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR.value),
+                'code': getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR),
                 'message': f'{e}',
             }
         }), 400
@@ -132,7 +132,7 @@ def validate_failed(e: ValidationError):
 
     return jsonify({
         'error': {
-            'code': ExtraErrorCodes.VALIDATION_FAIL.value,
+            'code': ExtraErrorCodes.VALIDATION_FAIL,
             'message': '; '.join(errors),
         },
     }), 422

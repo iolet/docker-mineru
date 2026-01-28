@@ -24,8 +24,8 @@ def magic_args(input_args: dict) -> Dict[str, Union[str, bool, None]]:
     input_args_: dict = valfilter(is_nonempty, input_args)
     output_args: dict = {}
 
-    input_args_.setdefault('parser_engine', ParserEngines.HYBRID_HTTP_CLIENT.value)
-    available_engines = [ member.value for name, member in ParserEngines.__members__.items() ]
+    input_args_.setdefault('parser_engine', ParserEngines.HYBRID_HTTP_CLIENT)
+    available_engines = [ member.value for member in ParserEngines.__members__.values() ]
     if input_args_['parser_engine'] not in available_engines:
         raise ValueError(
             f'unknown parser_engine {input_args_["parser_engine"]},'
@@ -33,8 +33,8 @@ def magic_args(input_args: dict) -> Dict[str, Union[str, bool, None]]:
         )
     output_args['backend'] = input_args_['parser_engine']
 
-    input_args_.setdefault('parser_prefer', ParserPrefers.AUTO.value)
-    available_prefers = [ member.value for name, member in ParserPrefers.__members__.items() ]
+    input_args_.setdefault('parser_prefer', ParserPrefers.AUTO)
+    available_prefers = [ member.value for member in ParserPrefers.__members__.values() ]
     if input_args_['parser_prefer'] not in available_prefers:
         raise ValueError(
             f'unknown parser_prefer {input_args_["parser_prefer"]},'
@@ -43,8 +43,8 @@ def magic_args(input_args: dict) -> Dict[str, Union[str, bool, None]]:
         )
     output_args['parse_method'] = input_args_['parser_prefer']
 
-    input_args_.setdefault('target_language', TargetLanguages.CH.value)
-    available_languages = [ member.value for name, member in TargetLanguages.__members__.items() ]
+    input_args_.setdefault('target_language', TargetLanguages.CH)
+    available_languages = [ member.value for member in TargetLanguages.__members__.values() ]
     if input_args_['target_language'] not in available_languages:
         raise ValueError(
             f'unknown target_language {input_args_["target_language"]},'

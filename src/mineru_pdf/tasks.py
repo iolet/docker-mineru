@@ -12,6 +12,7 @@ from flask import current_app
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 
+from .constants import TaskResult, TaskStatus
 from .exceptions import ExtraErrorCodes
 from .extensions import database
 from .models import Task
@@ -23,21 +24,6 @@ from .utils.httpclient import download_file, post_callback
 
 logger = get_task_logger(__name__)
 
-
-class Result(object):
-    NONE_: str = 'NONE'
-    COLLECTING: str = 'COLLECTING'
-    CHECKING: str = 'CHECKING'
-    INFERRING: str = 'INFERRING'
-    PACKING: str = 'PACKING'
-    CLEANING: str = 'CLEANING'
-    FINISHED: str = 'FINISHED'
-
-class Status(object):
-    CREATED: str = 'CREATED'
-    RUNNING: str = 'RUNNING'
-    COMPLETED: str = 'COMPLETED'
-    TERMINATED: str = 'TERMINATED'
 
 @shared_task(bind=True, max_retries=2, retry_backoff=True)
 def mining_pdf(self: Concrete, task_id: int) -> int:
@@ -53,9 +39,9 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
         logger.exception(e)
         return 0
 
-    task.status = Status.RUNNING
-    task.result = Result.NONE_
-    task.errors = ExtraErrorCodes.NONE_.value
+    task.status = TaskStatus.RUNNING
+    task.result = TaskResult.NONE_
+    task.errors = ExtraErrorCodes.NONE_
     task.started_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
@@ -66,7 +52,7 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
     logger.info(f'workdir -> {workdir} folder -> {folder}')
 
     # download file
-    task.result = Result.COLLECTING
+    task.result = TaskResult.COLLECTING
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
@@ -76,14 +62,14 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
         )
     except Exception as e:
         logger.exception(e)
-        task.status = Status.TERMINATED
-        task.errors = getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR.value)
+        task.status = TaskStatus.TERMINATED
+        task.errors = getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR)
         task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
         database.session.commit()
         return 0
 
     # check file
-    task.result = Result.CHECKING
+    task.result = TaskResult.CHECKING
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
@@ -91,14 +77,14 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
         file_check(pdf_file)
     except Exception as e:
         logger.exception(e)
-        task.status = Status.TERMINATED
-        task.errors = getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR.value)
+        task.status = TaskStatus.TERMINATED
+        task.errors = getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR)
         task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
         database.session.commit()
         return 0
 
     # infect content
-    task.result = Result.INFERRING
+    task.result = TaskResult.INFERRING
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
@@ -123,14 +109,14 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
         magic_file(pdf_file, workdir, **magic_kwargs) # type: ignore
     except Exception as e:
         logger.exception(e)
-        task.status = Status.TERMINATED
-        task.errors = getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR.value)
+        task.status = TaskStatus.TERMINATED
+        task.errors = getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR)
         task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
         database.session.commit()
         return 255
 
     # packing result
-    task.result = Result.PACKING
+    task.result = TaskResult.PACKING
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
@@ -144,7 +130,7 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
     database.session.commit()
 
     # clean workarea
-    task.result = Result.CLEANING
+    task.result = TaskResult.CLEANING
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
 
@@ -152,8 +138,8 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
         shutil.rmtree(workdir)
 
     # mark as completed
-    task.status = Status.COMPLETED
-    task.result = Result.FINISHED
+    task.status = TaskStatus.COMPLETED
+    task.result = TaskResult.FINISHED
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     task.finished_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()

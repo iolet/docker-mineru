@@ -12,7 +12,7 @@ def handle_server_error(e: Exception):
 
     return jsonify({
         'error': {
-            'code': getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR.value),
+            'code': getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR),
             'message': f'{e.__class__} {e}'
         }
     }), 500

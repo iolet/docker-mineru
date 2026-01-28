@@ -1,7 +1,7 @@
 from marshmallow import EXCLUDE, Schema, fields, post_dump
 
+from .constants import TaskStatus
 from .models import Task
-from .tasks import Status
 
 
 class TaskSchema(Schema):
@@ -28,4 +28,4 @@ class TaskSchema(Schema):
         return {
             'location': task.tarball_location,
             'checksum': task.tarball_checksum,
-        } if Status.COMPLETED == task.status else None
+        } if TaskStatus.COMPLETED == task.status else None

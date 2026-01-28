@@ -32,3 +32,18 @@ class TargetLanguages(StrEnum):
     TA = 'ta'
     TE = 'te'
     TH = 'th'
+
+class TaskResult(StrEnum):
+    NONE_ = 'NONE'
+    COLLECTING = 'COLLECTING'
+    CHECKING = 'CHECKING'
+    INFERRING = 'INFERRING'
+    PACKING = 'PACKING'
+    CLEANING = 'CLEANING'
+    FINISHED = 'FINISHED'
+
+class TaskStatus(StrEnum):
+    CREATED = 'CREATED'
+    RUNNING = 'RUNNING'
+    COMPLETED = 'COMPLETED'
+    TERMINATED = 'TERMINATED'
