@@ -48,7 +48,7 @@ def file_parse():
     uploaded_file.save(input_file)
 
     try:
-        file_check(input_file)
+        file_check(input_file, max_page=500)
     except Exception as e:
         return jsonify({
             'error': {

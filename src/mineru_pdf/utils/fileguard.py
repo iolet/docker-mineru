@@ -102,7 +102,7 @@ def create_zipfile(zip_file: Path, target_dir: Path) -> Path:
 
     return zip_file
 
-def file_check(input_file: Path) -> None:
+def file_check(input_file: Path, **kwargs) -> None:
 
     if not input_file.is_file():
         raise ValueError('not a regular file')
@@ -132,7 +132,9 @@ def file_check(input_file: Path) -> None:
             raise e
 
     # file should not be too many pages
-    maximum_pages = int(current_app.config.get('PDF_MAX_PAGE') or '0')
+    maximum_pages = int(
+        kwargs.get('max_page') or current_app.config.get('PDF_MAX_PAGE') or '0'
+    )
     actual_pages = len(document)
     if actual_pages > maximum_pages:
         raise FileTooManyPagesError(
@@ -141,6 +143,7 @@ def file_check(input_file: Path) -> None:
         )
 
     # page should be common, avoid too height or width
+    maximum_ratio = kwargs.get('max_ratio') or 3.141592
     try:
         page: PdfPage = document.get_page(0)
         width, height = page.get_size()
@@ -152,11 +155,11 @@ def file_check(input_file: Path) -> None:
             longer = width
             shorter = height
 
-        ratio = longer / shorter
+        first_ratio = round(longer / shorter, 5)
 
-        if ratio > 3.1415926:
+        if first_ratio > maximum_ratio:
             raise FilePageRatioInvalidError(
-                f'unsupported page ratio {ratio}, it greater then threshold',
+                f'unsupported page ratio {first_ratio}, it greater then threshold',
             )
 
     finally:
