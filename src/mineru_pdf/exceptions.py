@@ -17,7 +17,7 @@ class AppBaseException(Exception):
 class CUDANotAvailableException(AppBaseException):
     """CUDA not available occurred."""
 
-    code = 'GPU_RUNTIME_ERROR'
+    code = 'CUDA_NOT_AVAILABLE'
 
 class GPUOutOfMemoryException(AppBaseException):
     """GPU out of memory occurred."""
