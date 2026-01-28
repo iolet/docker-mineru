@@ -71,7 +71,7 @@ elif [ "sched" = "${1}" ]; then
     set -- /app/.venv/bin/celery \
         --app src.mineru_pdf.celery.app \
         beat \
-        --schedule /app/instance/sched.db \
+        --schedule /app/instance/sched \
         --loglevel ${LOGLEVEL:-"INFO"}
 elif [ "vllm" = "${1}" ]; then
     set -- /app/.venv/bin/mineru-vllm-server \
