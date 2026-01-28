@@ -5,7 +5,7 @@ from celery import Celery
 from celery.schedules import crontab
 
 from . import create_app
-from .tasks.miner import prune_archives, remove_workdir
+from .tasks import prune_archives, remove_workdir
 
 
 logging.config.dictConfig({
