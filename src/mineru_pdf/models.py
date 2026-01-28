@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy import INTEGER, String, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .services import database
+from .extensions import database
 
 
 class Task(database.Model):

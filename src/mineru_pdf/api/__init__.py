@@ -2,7 +2,7 @@ import logging
 from flask import jsonify
 from werkzeug.exceptions import HTTPException
 
-from ..tasks.constants import Errors
+from ..exceptions import ExtraErrorCodes
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ def handle_server_error(e: Exception):
 
     return jsonify({
         'error': {
-            'code': getattr(e, 'code', Errors.SYS_INTERNAL_ERROR),
+            'code': getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR.value),
             'message': f'{e.__class__} {e}'
         }
     }), 500

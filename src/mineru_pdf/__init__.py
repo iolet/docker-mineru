@@ -24,7 +24,7 @@ def create_app():
     ))
 
     # init essential components
-    from .services import database, migrate
+    from .extensions import database, migrate
     database.init_app(app)
     migrate.init_app(
         app, db=database,

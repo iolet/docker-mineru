@@ -8,8 +8,8 @@ from urllib.parse import ParseResult, urlparse
 import torch
 from toolz.dicttoolz import valfilter
 
-from .requests import ParserEngines, ParserPrefers, TargetLanguages
-from ..tasks.exceptions import CUDANotAvailableError, GPUOutOfMemoryError
+from ..constants import ParserEngines, ParserPrefers, TargetLanguages
+from ..exceptions import CUDANotAvailableException, GPUOutOfMemoryException
 
 logger = logging.getLogger(__name__)
 
@@ -117,11 +117,11 @@ def magic_file(input_file: Path, output_dir: Path,  **magic_kwargs: Dict[str, Un
             apply_scaled_output=magic_kwargs.get('apply_scaled_output', False)
         )
     except (MemoryError, torch.OutOfMemoryError) as e:
-        raise GPUOutOfMemoryError('GPU out of memory') from e
+        raise GPUOutOfMemoryException('GPU out of memory') from e
     except ValueError as e:
         pattern = r'Invalid\s+CUDA\s+\S+\s+requested.\s+Use\s+\S+\s+or\s+pass\s+valid\s+CUDA\s+device\(s\)\s+if\s+available'
         if re_search(pattern, str(e)):
-            raise CUDANotAvailableError('CUDA invalid, maybe a driver issues') from e
+            raise CUDANotAvailableException('CUDA invalid, maybe a driver issues') from e
         raise e
     finally:
         if torch.cuda.is_available():

@@ -5,8 +5,9 @@ from urllib.parse import ParseResult, urlparse
 import requests
 from flask import current_app
 
+from ..exceptions import FileDownloadFailureError
 from ..models import Task
-from ..utils.presenters import TaskSchema
+from ..presenters import TaskSchema
 
 logger = logging.getLogger(__name__)
 
@@ -14,13 +15,16 @@ logger = logging.getLogger(__name__)
 def download_file(uri: str, sink: Path) -> Path:
     """Raises :class:`HTTPError`, if one occurred."""
 
-    with requests.get(uri, stream=True) as r:
+    try:
+        r: requests.Response = requests.get(uri, stream=True)
         r.raise_for_status()
-        with open(sink, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
+    except requests.exceptions.RequestException as e:
+        raise FileDownloadFailureError(str(e))
 
-    return sink
+    with sink.open('wb') as f:
+        for chunk in r.iter_content(chunk_size=8192):
+            f.write(chunk)
+        return sink
 
 def post_callback(task: Task) -> None:
 

@@ -9,11 +9,11 @@ from flask_pydantic import validate
 from flask_pydantic.exceptions import ValidationError
 from sqlalchemy import select
 
+from ...exceptions import ExtraErrorCodes
 from ...models import Task, database
-from ...tasks.constants import Errors, Result, Status
-from ...tasks.miner import mining_pdf
-from ...utils.presenters import TaskSchema
-from ...utils.requests import TaskRequest
+from ...presenters import TaskSchema
+from ...requests import TaskRequest
+from ...tasks import Result, Status, mining_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ def create(body: TaskRequest):
         callback_url=str(body.callback_url), # type: ignore
         status=Status.CREATED, # type: ignore
         result=Result.NONE_, # type: ignore
-        errors=Errors.NONE_, # type: ignore
+        errors=ExtraErrorCodes.NONE_.value, # type: ignore
         created_at=arrow.now(current_app.config.get('TIMEZONE')).datetime, # type: ignore
         updated_at=arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     )
@@ -91,7 +91,7 @@ def validate_failed(e: ValidationError):
 
     return jsonify({
         'error': {
-            'code': 'ValidationError',
+            'code': ExtraErrorCodes.VALIDATION_FAIL.value,
             'message': '; '.join(errors),
         },
     }), 422

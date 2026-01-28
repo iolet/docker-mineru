@@ -23,7 +23,7 @@ from pypdfium2 import PdfDocument, PdfPage, PdfiumError, raw as pdfium2_raw
 from pypdfium2.internal.consts import ErrorToStr
 
 from ..models import Task
-from ..tasks.exceptions import (
+from ..exceptions import (
     FileEncryptionFoundError, FileMIMEUnsupportedError,
     FileTooLargeSizeError, FileTooManyPagesError,
     FilePageRatioInvalidError,

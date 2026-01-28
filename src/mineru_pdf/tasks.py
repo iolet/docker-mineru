@@ -9,21 +9,35 @@ from celery import shared_task
 from celery.app.task import Task as Concrete
 from celery.utils.log import get_task_logger
 from flask import current_app
-from requests.exceptions import HTTPError
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 
-from .constants import Errors, Result, Status, find_http_errors
-from ..models import Task
-from ..services import database
-from ..utils.fileguard import (
+from .exceptions import ExtraErrorCodes
+from .extensions import database
+from .models import Task
+from .utils.fileguard import (
     as_semantic, calc_sha256sum, file_check,
     create_savedir, create_workdir, create_zipfile
 )
-from ..utils.httpclient import download_file, post_callback
+from .utils.httpclient import download_file, post_callback
 
 logger = get_task_logger(__name__)
 
+
+class Result(object):
+    NONE_: str = 'NONE'
+    COLLECTING: str = 'COLLECTING'
+    CHECKING: str = 'CHECKING'
+    INFERRING: str = 'INFERRING'
+    PACKING: str = 'PACKING'
+    CLEANING: str = 'CLEANING'
+    FINISHED: str = 'FINISHED'
+
+class Status(object):
+    CREATED: str = 'CREATED'
+    RUNNING: str = 'RUNNING'
+    COMPLETED: str = 'COMPLETED'
+    TERMINATED: str = 'TERMINATED'
 
 @shared_task(bind=True, max_retries=2, retry_backoff=True)
 def mining_pdf(self: Concrete, task_id: int) -> int:
@@ -41,7 +55,7 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
 
     task.status = Status.RUNNING
     task.result = Result.NONE_
-    task.errors = Errors.NONE_
+    task.errors = ExtraErrorCodes.NONE_.value
     task.started_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
     database.session.commit()
@@ -60,10 +74,10 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
         pdf_file: Path = download_file(
             task.file_url, workdir.joinpath(task.file_id).with_suffix('.pdf')
         )
-    except HTTPError as e:
+    except Exception as e:
         logger.exception(e)
         task.status = Status.TERMINATED
-        task.errors = find_http_errors(e.response.status_code)
+        task.errors = getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR.value)
         task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
         database.session.commit()
         return 0
@@ -78,7 +92,7 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
     except Exception as e:
         logger.exception(e)
         task.status = Status.TERMINATED
-        task.errors = getattr(e, 'code', Errors.SYS_INTERNAL_ERROR)
+        task.errors = getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR.value)
         task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
         database.session.commit()
         return 0
@@ -89,7 +103,7 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
     database.session.commit()
 
     if not 'magic_file' in globals():
-        from ..utils.magicfile import magic_args, magic_file
+        from .utils.magicfile import magic_args, magic_file
 
     try:
         finetune_args = json.loads(task.finetune_args)
@@ -110,7 +124,7 @@ def mining_pdf(self: Concrete, task_id: int) -> int:
     except Exception as e:
         logger.exception(e)
         task.status = Status.TERMINATED
-        task.errors = getattr(e, 'code', Errors.SYS_INTERNAL_ERROR)
+        task.errors = getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR.value)
         task.updated_at = arrow.now(current_app.config.get('TIMEZONE')).datetime # type: ignore
         database.session.commit()
         return 255

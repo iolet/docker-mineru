@@ -3,7 +3,7 @@ from pathlib import Path
 import click
 from filename_sanitizer import sanitize_path_fragment
 
-from ..utils.requests import ParserEngines, ParserPrefers, TargetLanguages
+from ..constants import ParserEngines, ParserPrefers, TargetLanguages
 
 
 @click.command('parse')

@@ -10,10 +10,10 @@ from filename_sanitizer import sanitize_path_fragment
 from pydantic import ValidationError
 from werkzeug.datastructures import FileStorage
 
-from ...tasks.constants import Errors
-from ...tasks.exceptions import GPUOutOfMemoryError
+from ...constants import ParserEngines
+from ...exceptions import ExtraErrorCodes, GPUOutOfMemoryException
+from ...requests import FileParseForm
 from ...utils.fileguard import file_check, load_json_file, read_text_file, pickup_images
-from ...utils.requests import FileParseForm, ParserEngines
 
 parser: Blueprint = Blueprint('parser', __name__)
 logger = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ def file_parse():
         logger.fatal('file exists but passed validation rules')
         return jsonify({
             'error': {
-                'code': Errors.SYS_INTERNAL_ERROR,
+                'code': ExtraErrorCodes.INTERNAL_ERROR.value,
                 'message': 'file: unaccepted rules passed',
             }
         }), 500
@@ -52,7 +52,7 @@ def file_parse():
     except Exception as e:
         return jsonify({
             'error': {
-                'code': getattr(e, 'code', Errors.SYS_INTERNAL_ERROR),
+                'code': getattr(e, 'code', ExtraErrorCodes.INTERNAL_ERROR.value),
                 'message': f'{e}',
             }
         }), 400
@@ -72,12 +72,12 @@ def file_parse():
 
     try:
         magic_file(input_file, cache_dir, **magic_kwargs) # type: ignore
-    except GPUOutOfMemoryError as e:
+    except GPUOutOfMemoryException as e:
         g.is_vram_full = True
         logger.warning(e, exc_info=True)
         r = jsonify({
             'error': {
-                'code': Errors.GPU_OUT_OF_MEMORY,
+                'code': e.code,
                 'message': f'{e}'
             }
         })
@@ -132,7 +132,7 @@ def validate_failed(e: ValidationError):
 
     return jsonify({
         'error': {
-            'code': 'ValidationError',
+            'code': ExtraErrorCodes.VALIDATION_FAIL.value,
             'message': '; '.join(errors),
         },
     }), 422
