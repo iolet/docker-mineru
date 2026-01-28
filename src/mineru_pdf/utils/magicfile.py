@@ -76,7 +76,7 @@ def magic_args(input_args: dict) -> Dict[str, Union[str, bool, None]]:
             )
         output_args['server_url'] = vllm_endpoint.geturl()
 
-    input_args_.setdefault('apply_scaled', False)
+    input_args_.setdefault('apply_scaled', True)
     if not isinstance(input_args_['apply_scaled'], bool):
         raise ValueError(
             'invalid type for apply_scaled, only supported True and False'

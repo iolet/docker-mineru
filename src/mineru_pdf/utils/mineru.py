@@ -12,7 +12,7 @@ from mineru.utils.guess_suffix_or_lang import guess_suffix_by_bytes
 from mineru.utils.pdf_image_tools import images_bytes_to_pdf_bytes
 from mineru.utils.pdf_page_id import get_end_page_id
 
-from ..utils.fileguard import output_data_handler, output_dirs_handler
+from .fileguard import output_data_handler, output_dirs_handler
 
 logger = logging.getLogger(__name__)
 
