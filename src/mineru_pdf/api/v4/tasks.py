@@ -8,6 +8,7 @@ from flask import Blueprint, current_app, jsonify, request
 from flask_pydantic import validate
 from flask_pydantic.exceptions import ValidationError
 from sqlalchemy import select
+from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 from ...auth import bearer
 from ...constants import TaskResult, TaskStatus, TokenLabels
@@ -64,13 +65,18 @@ def create(body: TaskRequest):
 @validate()
 def fetch(task_id: str):
 
-    task: Optional[Task] = database.session.scalars(
-        select(Task).
-        where(Task.uuid == task_id).
-        order_by(Task.id.desc())
-    ).first()
-
-    if task is None:
+    try:
+        task: Task = database.session.scalars(
+            select(Task).where(Task.uuid == task_id).order_by(Task.id.desc())
+        ).one()
+    except MultipleResultsFound:
+        return jsonify({
+            'error': {
+                'code': ExtraErrorCodes.INTERNAL_ERROR,
+                'message': f'multiple results found for task <{task_id}>',
+            },
+        }), 500
+    except NoResultFound:
         return jsonify({
             'error': {
                 'code': 'TaskNotFound',
