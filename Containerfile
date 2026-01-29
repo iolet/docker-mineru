@@ -136,8 +136,7 @@ RUN set -eux; \
     done; \
     unset py_ver; \
     \
-    rm -rf ~/.cache; \
-    rm -rf ~/.config; \
+    rm -rf ~/.cache ~/.config; \
     find /tmp -type d -path '/tmp/**' -print0 | xargs -0 rm -rf;
 
 # Setup workdir
