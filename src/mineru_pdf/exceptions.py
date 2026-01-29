@@ -2,9 +2,9 @@
 from enum import StrEnum
 
 class ExtraErrorCodes(StrEnum):
-    NONE_ = 'NONE'
-    INTERNAL_ERROR = 'SYS_INTERNAL_ERROR'
-    VALIDATION_FAIL = 'REQ_VALIDATION_FAIL'
+    NONE_ = 'None'
+    INTERNAL_ERROR = 'SysInternalError'
+    VALIDATION_FAIL = 'ReqValidationFail'
 
 class AppBaseException(Exception):
     """The app base exception"""
@@ -17,39 +17,39 @@ class AppBaseException(Exception):
 class CUDANotAvailableException(AppBaseException):
     """CUDA not available occurred."""
 
-    code = 'CUDA_NOT_AVAILABLE'
+    code = 'CudaNotAvailable'
 
 class GPUOutOfMemoryException(AppBaseException):
     """GPU out of memory occurred."""
 
-    code = 'GPU_OUT_OF_MEMORY'
+    code = 'GpuOutOfMemory'
 
 class FileEncryptionFoundError(AppBaseException):
     """File has been encrypted"""
 
-    code = 'FILE_ENCRYPTION_FOUND'
+    code = 'FileEncryptionFound'
 
 class FilePageRatioInvalidError(AppBaseException):
     """Page ratio unexpected"""
 
-    code = 'FILE_PAGE_RADIO_INVALID'
+    code = 'FilePageRatioInvalid'
 
 class FileMIMEUnsupportedError(AppBaseException):
     """File MIME type unsupported"""
 
-    code = 'FILE_MIME_UNSUPPORTED'
+    code = 'FileMimeUnsupported'
 
-class FileTooLargeSizeError(AppBaseException):
-    """File too large size"""
+class FileSizeTooLargeError(AppBaseException):
+    """File size too large"""
 
-    code = 'FILE_TOO_LARGE_SIZE'
+    code = 'FileSizeTooLarge'
 
-class FileTooManyPagesError(AppBaseException):
-    """File too many pages"""
+class FilePagesTooManyError(AppBaseException):
+    """File pages too many"""
 
-    code = 'FILE_TOO_MANY_PAGES'
+    code = 'FilePagesTooMany'
 
 class FileDownloadFailureError(AppBaseException):
     """File download failed"""
 
-    code = 'FILE_DOWNLOAD_FAILURE'
+    code = 'FileDownloadFailure'

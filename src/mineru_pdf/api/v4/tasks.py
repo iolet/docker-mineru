@@ -73,7 +73,7 @@ def fetch(task_id: str):
     if task is None:
         return jsonify({
             'error': {
-                'code': 'TASK_NOT_FOUND',
+                'code': 'TaskNotFound',
                 'message': 'task not found, please review task_id and try again',
             },
         }), 404

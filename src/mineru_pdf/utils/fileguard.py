@@ -25,7 +25,7 @@ from pypdfium2.internal.consts import ErrorToStr
 from ..models import Task
 from ..exceptions import (
     FileEncryptionFoundError, FileMIMEUnsupportedError,
-    FileTooLargeSizeError, FileTooManyPagesError,
+    FileSizeTooLargeError, FilePagesTooManyError,
     FilePageRatioInvalidError,
 )
 
@@ -116,7 +116,7 @@ def file_check(input_file: Path, **kwargs) -> None:
     actual_size = FileSize(input_file.stat().st_size, StorageUnit.BYTES)
     limits_size = FileSize(current_app.config.get('PDF_MAX_SIZE') or '0')
     if actual_size > limits_size:
-        raise FileTooLargeSizeError(
+        raise FileSizeTooLargeError(
             f'expected filesize is equal or less then '
             f'{int(limits_size.convert_to_bytes())} bytes, '
             f'{int(actual_size.convert_to_bytes())} bytes given'
@@ -137,7 +137,7 @@ def file_check(input_file: Path, **kwargs) -> None:
     )
     actual_pages = len(document)
     if actual_pages > maximum_pages:
-        raise FileTooManyPagesError(
+        raise FilePagesTooManyError(
             f'expected pages is equal or less then {maximum_pages}, '
             f'{actual_pages} given'
         )
