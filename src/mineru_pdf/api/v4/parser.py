@@ -88,17 +88,17 @@ def file_parse():
         ).shift(seconds=200).datetime
         return r, 503
 
-    data: Dict[str, Any] = {
-        'md_content': read_text_file(cache_dir.joinpath('content.md'))
-    }
+    data: Dict[str, Any] = {}
 
     if form.apply_scaled:
-        data['scaled'] = [ 'content_list', 'layout' ]
+        data['scaled'] = [ 'layout' ]
+        if ParserEngines.PIPELINE == form.parser_engine:
+            data['scaled'].append('content_list')
+        else:
+            data['scaled'].append('content_list_v2')
 
-    if form.return_layout:
-        data['layout'] = load_json_file(
-            cache_dir.joinpath('model.scaled.json' if form.apply_scaled else 'model.json')
-        )
+    if form.return_md:
+        data['md_content'] = read_text_file(cache_dir.joinpath('content.md'))
 
     if form.return_info:
         data['info'] = load_json_file(
@@ -115,6 +115,11 @@ def file_parse():
             data['content_list_v2'] = load_json_file(
                 cache_dir.joinpath('content_list_v2.scaled.json' if form.apply_scaled else 'content_list_v2.json')
             )
+
+    if form.return_layout:
+        data['layout'] = load_json_file(
+            cache_dir.joinpath('model.scaled.json' if form.apply_scaled else 'model.json')
+        )
 
     if form.return_images:
         data['images'] = pickup_images(
