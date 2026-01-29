@@ -22,6 +22,7 @@ def upgrade():
         sa.Column('id', sa.INTEGER(), primary_key=True, autoincrement=True, nullable=False),
         sa.Column('owner', sa.String(length=128), nullable=False, server_default=''),
         sa.Column('token', sa.String(length=128), nullable=False, server_default=''),
+        sa.Column('labels', sa.String(length=255), nullable=False, server_default=''),
         sa.Column('created_at', sa.TIMESTAMP(timezone=True), nullable=True, server_default=None),
         sa.Column('updated_at', sa.TIMESTAMP(timezone=True), nullable=True, server_default=None),
         sa.PrimaryKeyConstraint('id'),
