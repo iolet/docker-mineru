@@ -1,5 +1,9 @@
 from enum import StrEnum
 
+class TokenLabels(StrEnum):
+    FILES = 'files'
+    TASKS = 'tasks'
+
 class ParserEngines(StrEnum):
     PIPELINE = 'pipeline'
     VLM_AUTO_ENGINE = 'vlm-auto-engine'

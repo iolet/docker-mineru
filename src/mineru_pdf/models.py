@@ -6,6 +6,18 @@ from sqlalchemy.orm import Mapped, mapped_column
 from .extensions import database
 
 
+class Bearer(database.Model):
+
+    __tablename__ = 'bearers'
+    __table_args__ = {'sqlite_autoincrement': True}
+
+    id: Mapped[int] = mapped_column(INTEGER(), primary_key=True, autoincrement=True, nullable=False)
+    owner: Mapped[str] = mapped_column(String(128), nullable=False, default='', insert_default='')
+    token: Mapped[str] = mapped_column(String(128), nullable=False, default='', insert_default='')
+    labels: Mapped[str] = mapped_column(String(255), nullable=False, default='', insert_default='')
+    created_at: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP(True), nullable=True)
+    updated_at: Mapped[Optional[TIMESTAMP]] = mapped_column(TIMESTAMP(True), nullable=True)
+
 class Task(database.Model):
 
     __tablename__ = 'tasks'

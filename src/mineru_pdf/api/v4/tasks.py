@@ -9,7 +9,8 @@ from flask_pydantic import validate
 from flask_pydantic.exceptions import ValidationError
 from sqlalchemy import select
 
-from ...constants import TaskResult, TaskStatus
+from ...auth import bearer
+from ...constants import TaskResult, TaskStatus, TokenLabels
 from ...exceptions import ExtraErrorCodes
 from ...extensions import database
 from ...models import Task
@@ -23,6 +24,7 @@ tasks: Blueprint = Blueprint('tasks', __name__)
 
 
 @tasks.post('/tasks')
+@bearer.login_required(role=TokenLabels.TASKS)
 @validate()
 def create(body: TaskRequest):
 
@@ -58,6 +60,7 @@ def create(body: TaskRequest):
 
 
 @tasks.get('/tasks/<string:task_id>')
+@bearer.login_required(role=TokenLabels.TASKS)
 @validate()
 def fetch(task_id: str):
 

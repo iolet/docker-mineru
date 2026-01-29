@@ -10,7 +10,8 @@ from filename_sanitizer import sanitize_path_fragment
 from pydantic import ValidationError
 from werkzeug.datastructures import FileStorage
 
-from ...constants import ParserEngines
+from ...auth import bearer
+from ...constants import ParserEngines, TokenLabels
 from ...exceptions import ExtraErrorCodes, GPUOutOfMemoryException
 from ...requests import FileParseForm
 from ...utils.fileguard import file_check, load_json_file, read_text_file, pickup_images
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 @parser.post('/file_parse')
+@bearer.login_required(role=TokenLabels.FILES)
 def file_parse():
 
     uploaded_file: Optional[FileStorage] = request.files.get('file')
