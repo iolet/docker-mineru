@@ -35,8 +35,10 @@ def create_app():
     # register commands
     from .cli.parse import parse_file
     from .cli.storage import storage
+    from .cli.token import token
     app.cli.add_command(parse_file)
     app.cli.add_command(storage)
+    app.cli.add_command(token)
 
     # register blueprint
     from .api.v4.parser import parser

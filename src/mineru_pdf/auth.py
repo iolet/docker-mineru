@@ -43,4 +43,4 @@ def auth_error(status: int):
 
 @bearer.get_user_roles
 def get_bearer_labels(bearer: Bearer):
-    return [ label.strip() for label in bearer.labels.split(',')]
+    return [ label.strip().lower() for label in bearer.labels.split(',')]
