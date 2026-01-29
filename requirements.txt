@@ -13,9 +13,9 @@ Flask-SQLAlchemy~=3.1.1
 filesizelib~=0.12.1
 gunicorn~=23.0.0
 marshmallow~=4.2.0
-mineru~=2.7.1
-mineru[pipeline]~=2.7.1
-mineru[vlm]~=2.7.1
+mineru==2.7.3
+mineru[pipeline]==2.7.3
+mineru[vlm]==2.7.3
 python-dotenv~=1.2.1
 torch>=2.7.1,<2.9
 pytz>=2025.2
