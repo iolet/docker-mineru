@@ -31,7 +31,7 @@ def read_fn(path):
         else:
             raise Exception(f"Unknown file suffix: {file_suffix}")
 
-def prepare_env(output_dir, pdf_file_name, parse_method):
+def _prepare_env(output_dir, pdf_file_name, parse_method):
     return output_dirs_handler(output_dir, pdf_file_name, parse_method)
 
 def _convert_pdf_bytes_to_bytes_by_pypdfium2(pdf_bytes, start_page_id=0, end_page_id=None):
@@ -147,7 +147,7 @@ def _process_pipeline(
     for idx, model_list in enumerate(infer_results):
         model_json = copy.deepcopy(model_list)
         pdf_file_name = pdf_file_names[idx]
-        local_image_dir, local_md_dir = prepare_env(output_dir, pdf_file_name, parse_method)
+        local_image_dir, local_md_dir = _prepare_env(output_dir, pdf_file_name, parse_method)
         image_writer, md_writer = FileBasedDataWriter(local_image_dir), FileBasedDataWriter(local_md_dir)
 
         images_list = all_image_lists[idx]
@@ -197,7 +197,7 @@ def _process_vlm(
 
     for idx, pdf_bytes in enumerate(pdf_bytes_list):
         pdf_file_name = pdf_file_names[idx]
-        local_image_dir, local_md_dir = prepare_env(output_dir, pdf_file_name, parse_method)
+        local_image_dir, local_md_dir = _prepare_env(output_dir, pdf_file_name, parse_method)
         image_writer, md_writer = FileBasedDataWriter(local_image_dir), FileBasedDataWriter(local_md_dir)
 
         middle_json, infer_result = vlm_doc_analyze( # type: ignore
@@ -241,7 +241,7 @@ def _process_hybrid(
 
     for idx, (pdf_bytes, lang) in enumerate(zip(pdf_bytes_list, h_lang_list)):
         pdf_file_name = pdf_file_names[idx]
-        local_image_dir, local_md_dir = prepare_env(output_dir, pdf_file_name, f"hybrid_{parse_method}")
+        local_image_dir, local_md_dir = _prepare_env(output_dir, pdf_file_name, f"hybrid_{parse_method}")
         image_writer, md_writer = FileBasedDataWriter(local_image_dir), FileBasedDataWriter(local_md_dir)
 
         middle_json, infer_result, _vlm_ocr_enable = hybrid_doc_analyze( # type: ignore
