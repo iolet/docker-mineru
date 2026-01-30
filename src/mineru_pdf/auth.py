@@ -2,6 +2,7 @@ from flask import jsonify
 from flask_httpauth import HTTPTokenAuth
 from sqlalchemy import select
 
+from .exceptions import ExtraErrorCodes
 from .extensions import database
 from .models import Bearer
 
@@ -21,7 +22,7 @@ def auth_error(status: int):
     if 401 == status:
         return jsonify({
             'error': {
-                'code': 'ACCESS_DENIED',
+                'code': ExtraErrorCodes.ACCESS_DENIED,
                 'message': 'token invalid or missing'
             }
         }), status
@@ -29,14 +30,14 @@ def auth_error(status: int):
     if 403 == status:
         return jsonify({
             'error': {
-                'code': 'ACCESS_FORBIDDEN',
+                'code': ExtraErrorCodes.ACCESS_FORBIDDEN,
                 'message': 'no permission for entry'
             }
         }), status
 
     return jsonify({
         'error': {
-            'code': 'UNKNOWN_AUTH_PROVIDER',
+            'code': ExtraErrorCodes.UNKNOWN_PROVIDER,
             'message': 'unknown auth provider'
         }
     }), status

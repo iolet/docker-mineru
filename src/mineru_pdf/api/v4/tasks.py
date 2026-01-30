@@ -78,7 +78,7 @@ def fetch(task_id: str):
     except NoResultFound:
         return jsonify({
             'error': {
-                'code': 'TaskNotFound',
+                'code': ExtraErrorCodes.TASK_NOT_FOUND,
                 'message': 'task not found, please review task_id and try again',
             },
         }), 404

@@ -2,9 +2,17 @@
 from enum import StrEnum
 
 class ExtraErrorCodes(StrEnum):
+    """Extra error code collection"""
+
     NONE_ = 'None'
-    INTERNAL_ERROR = 'SysInternalError'
-    VALIDATION_FAIL = 'ReqValidationFail'
+    INTERNAL_ERROR = 'InternalError'
+
+    ACCESS_DENIED = 'AccessDenied'
+    ACCESS_FORBIDDEN = 'AccessForbidden'
+    UNKNOWN_PROVIDER = 'UnknownProvider'
+
+    VALIDATION_FAIL = 'ValidationFail'
+    TASK_NOT_FOUND = 'TaskNotFound'
 
 class AppBaseException(Exception):
     """The app base exception"""
