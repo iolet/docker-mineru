@@ -56,6 +56,9 @@ ARG APT_ARCHIVES
 ARG APT_SECURITY
 ARG PIP_INDEX=https://pypi.org
 
+# Selected target gpu arch set
+ARG GPU_SET
+
 # Models location
 ENV MINERU_MODEL_SOURCE=local
 ENV MINERU_MODEL_PIPELINE=/app/models/opendatalab--PDF-Extract-Kit-1.0
@@ -121,6 +124,21 @@ RUN set -eux; \
         echo "$PIP_INDEX should not be empty, aborted"; \
         exit 3; \
     fi; \
+    \
+    case $GPU_SET in \
+        sm90to120 ) \
+            echo "enabling gpu set ${GPU_SET}..."; \
+            sed -i 's/#@//g' requirements.txt; \
+            ;; \
+        sm80to89 ) \
+            echo "enabling gpu set ${GPU_SET}..."; \
+            sed -i 's/#+//g' requirements.txt; \
+            ;; \
+        * ) \
+            echo "unsupported gpu set ${GPU_SET}, aborted"; \
+            exit 1; \
+            ;; \
+    esac; \
     \
     pip3 install \
         --requirement requirements.txt \
