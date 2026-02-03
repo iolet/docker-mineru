@@ -1,5 +1,5 @@
 # Defined a base nvidia/cuda image
-ARG CUDA_TAG=12.8.1-base-ubuntu24.04
+ARG CUDA_TAG=12.9.1-base-ubuntu24.04
 
 # We need get verified binary
 FROM docker.io/nvidia/cuda:${CUDA_TAG} AS builder
