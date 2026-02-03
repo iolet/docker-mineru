@@ -22,13 +22,13 @@ requests~=2.32.5
 SQLAlchemy~=2.0.45
 toolz~=1.1.0
 # for Hopper(sm90), Blackwell(sm120) GPUs, you should use following dependencies
-cuda-python~=12.9.0
-torch~=2.9.1
-vllm~=0.12.0
+#@cuda-python~=12.9.0
+#@torch~=2.9.1
+#@vllm~=0.12.0
 # for Ampere(sm80,sm86), Ada(sm89) GPUs, you should use following dependencies
-#cuda-python~=12.8.0
-#torch~=2.7.1
-#vllm~=0.10.1.1
+#+cuda-python~=12.8.0
+#+torch~=2.7.1
+#+vllm~=0.10.1.1
 # for torch optimized performance
 flashinfer-cubin==0.6.1
 flashinfer-python==0.6.1
